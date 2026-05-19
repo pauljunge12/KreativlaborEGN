@@ -1,91 +1,38 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kreativlabor EGN</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial, sans-serif;
-background:#f3f4f6;
-color:#111;
-}
-
-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:16px 24px;
-background:#fff;
-border-bottom:1px solid #ddd;
-position:sticky;
-top:0;
-}
-
-.container{padding:24px;max-width:1100px;margin:auto}
-
-.card{
-background:#fff;
-border:1px solid #ddd;
-border-radius:16px;
-padding:20px;
-margin-bottom:20px;
-}
-
-input,textarea,select{
-width:100%;
-padding:12px;
-margin-top:6px;
-border-radius:10px;
-border:1px solid #ccc;
-}
-
-button{
-padding:10px 14px;
-border:none;
-border-radius:10px;
-cursor:pointer;
-font-weight:bold;
-}
-
+body{margin:0;font-family:Arial;background:#f4f4f6;color:#111}
+header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:#fff;border-bottom:1px solid #ddd;position:sticky;top:0;z-index:5}
+.container{max-width:1100px;margin:auto;padding:20px}
+.card{background:#fff;border:1px solid #ddd;border-radius:14px;padding:16px;margin-bottom:16px}
+input,textarea,select{width:100%;padding:10px;margin-top:6px;border-radius:10px;border:1px solid #ccc}
+button{padding:10px 14px;border:none;border-radius:10px;cursor:pointer;font-weight:700}
 .btn{background:#2563eb;color:#fff}
 .btn2{background:#eee}
-
-.tabs button{
-margin-right:10px;
-padding:10px 14px;
-border-radius:10px;
-border:none;
-cursor:pointer;
-}
-
-.active{background:#2563eb;color:#fff}
-
 .hidden{display:none}
-
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{padding:10px;border-radius:10px;border:none;background:#eee;cursor:pointer}
+.active{background:#2563eb;color:#fff}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-
 @media(max-width:700px){.grid{grid-template-columns:1fr}}
 
 .login{
-position:fixed;
-inset:0;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#f3f4f6;
+position:fixed;inset:0;background:#f4f4f6;
+display:flex;align-items:center;justify-content:center
 }
-
 .login-box{
-background:#fff;
-padding:30px;
-border-radius:20px;
-width:90%;
-max-width:420px;
-border:1px solid #ddd;
+background:#fff;padding:26px;border-radius:16px;width:90%;max-width:420px;border:1px solid #ddd
 }
+.status{font-size:.75rem;padding:4px 8px;border-radius:999px}
+.s1{background:#dbeafe;color:#1d4ed8}
+.s2{background:#fef3c7;color:#92400e}
+.s3{background:#ede9fe;color:#6b21a8}
+.s4{background:#dcfce7;color:#166534}
 </style>
 </head>
 
@@ -94,31 +41,30 @@ border:1px solid #ddd;
 <!-- LOGIN -->
 <div id="login" class="login">
 <div class="login-box">
-<h2>Kreativlabor EGN Login</h2>
+<h2>Kreativlabor EGN</h2>
 <input id="name" placeholder="Name">
 <input id="mail" placeholder="E-Mail">
-<button class="btn" onclick="login()">Starten</button>
+<button class="btn" onclick="login()">Login</button>
 </div>
 </div>
 
 <header>
 <div><b>Kreativlabor EGN</b></div>
 <div>
-⭐ Punkte: <span id="points">0</span>
+⭐ <span id="points">0</span>
 <button class="btn2" onclick="adminLogin()">Admin</button>
 </div>
 </header>
 
 <div class="container hidden" id="app">
 
-<!-- NAV -->
 <div class="tabs">
 <button class="active" onclick="tab('order')">Aufträge</button>
 <button onclick="tab('db')">Datenbank</button>
 <button id="adminTab" class="hidden" onclick="tab('admin')">Admin</button>
 </div>
 
-<!-- ORDER -->
+<!-- AUFTRÄGE -->
 <div id="order">
 
 <div class="card">
@@ -126,8 +72,8 @@ border:1px solid #ddd;
 
 <input id="idea_name" placeholder="Name">
 <input id="idea_class" placeholder="Klasse">
-<input type="file" id="idea_sketch">
-<textarea id="idea_desc" placeholder="Beschreibung"></textarea>
+<input type="file" id="idea_file">
+<textarea id="idea_desc" placeholder="Beschreibung / Skizze"></textarea>
 
 <button class="btn" onclick="sendIdea()">Senden</button>
 </div>
@@ -138,10 +84,10 @@ border:1px solid #ddd;
 <input id="stl_name" placeholder="Name">
 <input id="stl_class" placeholder="Klasse">
 
-<select id="points_use">
+<select id="points_mode">
 <option value="none">Keine Punkte</option>
-<option value="discount">10% Rabatt (50 Punkte)</option>
-<option value="free">Gratis Druck (250 Punkte)</option>
+<option value="discount">50 Punkte = 10% Rabatt</option>
+<option value="free">250 Punkte = Frei</option>
 </select>
 
 <input type="file" id="stl_file">
@@ -151,7 +97,7 @@ border:1px solid #ddd;
 </div>
 
 <div class="card">
-<h3>Meine Aufträge</h3>
+<h3>Aufträge</h3>
 <div id="orders"></div>
 </div>
 
@@ -161,7 +107,7 @@ border:1px solid #ddd;
 <div id="db" class="hidden">
 
 <div class="card">
-<h3>Modell hochladen</h3>
+<h3>Modell Upload</h3>
 
 <input id="db_title" placeholder="Titel">
 <select id="db_cat">
@@ -185,33 +131,30 @@ border:1px solid #ddd;
 
 <!-- ADMIN -->
 <div id="admin" class="hidden">
-
 <div class="card">
 <h3>Admin Dashboard</h3>
 <div id="admin_orders"></div>
 </div>
-
 </div>
 
 </div>
 
 <script>
 
-let logged=false;
-let admin=false;
-
 let orders=[];
 let models=[];
 let points=0;
+let admin=false;
+
+/* SAFE LOAD */
+function safe(fn){try{fn()}catch(e){console.log(e)}}
 
 /* LOGIN */
 function login(){
-let n=name.value;
-let m=mail.value;
-if(!n||!m)return alert("Fehler");
-localStorage.user=n;
-document.getElementById("login").style.display="none";
-document.getElementById("app").classList.remove("hidden");
+if(!name.value||!mail.value)return alert("Fehler");
+localStorage.user=name.value;
+login.style.display="none";
+app.classList.remove("hidden");
 load();
 }
 
@@ -226,7 +169,7 @@ if(t==="db")db.classList.remove("hidden");
 if(t==="admin")admin.classList.remove("hidden");
 }
 
-/* DATA */
+/* STORAGE */
 function save(){
 localStorage.orders=JSON.stringify(orders);
 localStorage.models=JSON.stringify(models);
@@ -234,27 +177,29 @@ localStorage.points=points;
 }
 
 function load(){
+safe(()=>{
 orders=JSON.parse(localStorage.orders||"[]");
 models=JSON.parse(localStorage.models||"[]");
 points=parseInt(localStorage.points||"0");
 render();
+});
 }
 
 /* POINTS SAFE */
 function addPoints(v){
 points=Math.max(0,points+v);
-save();
-render();
+save();render();
 }
 
 /* IDEE */
 function sendIdea(){
 orders.unshift({
 type:"Idee",
-name:idea_name.value,
 desc:idea_desc.value,
-status:"Neu"
+status:"Neu",
+file:idea_file.files[0]?.name||""
 });
+addPoints(10);
 save();render();
 }
 
@@ -262,8 +207,7 @@ save();render();
 function sendStl(){
 
 let price=5;
-
-let mode=points_use.value;
+let mode=points_mode.value;
 
 if(mode==="discount"&&points>=50){
 points-=50;
@@ -278,75 +222,81 @@ price=0;
 
 orders.unshift({
 type:"STL",
-name:stl_name.value,
 desc:stl_desc.value,
+status:"Neu",
 price:price,
-status:"Neu"
+file:stl_file.files[0]?.name||""
 });
 
 addPoints(20);
-save();
-render();
+save();render();
 }
 
-/* MODELS */
+/* MODEL */
 function uploadModel(){
 models.unshift({
 title:db_title.value,
-desc:db_desc.value
+desc:db_desc.value,
+file:db_file.files[0]?.name||""
 });
 addPoints(40);
-save();
-render();
+save();render();
 }
 
-/* ADMIN LOGIN */
+/* ADMIN */
 function adminLogin(){
-let pw=prompt("Admin Passwort");
+let pw=prompt("Passwort");
 if(pw==="kreativlabor2026"){
 admin=true;
-document.getElementById("adminTab").classList.remove("hidden");
-alert("Admin OK");
+adminTab.classList.remove("hidden");
+alert("Admin aktiv");
 }
 }
 
 /* STATUS */
 function setStatus(i,s){
 orders[i].status=s;
-save();
-render();
+save();render();
 }
 
 /* DELETE */
 function del(i){
 orders.splice(i,1);
-save();
-render();
+save();render();
 }
 
-/* RENDER */
+/* RENDER SAFE */
 function render(){
+
+try{
 
 pointsEl.textContent=points;
 
+/* ORDERS */
 ordersEl.innerHTML=orders.map((o,i)=>`
 <div class="card">
 <b>${o.type}</b> - ${o.status}
 <p>${o.desc||""}</p>
+${o.file?`📎 ${o.file}`:""}
+<br>
 ${o.price?o.price.toFixed(2)+" €":""}
+<br><br>
 <button onclick="setStatus(${i},'Drucken')">Drucken</button>
 <button onclick="setStatus(${i},'Fertig')">Fertig</button>
-<button onclick="del(${i})">Entfernen</button>
+<button onclick="del(${i})">Löschen</button>
 </div>
 `).join("");
 
+/* MODELS */
 modelsEl.innerHTML=models.map(m=>`
 <div class="card">
 <b>${m.title}</b>
 <p>${m.desc}</p>
+${m.file?`📎 ${m.file}`:""}
 </div>
 `).join("");
 
+/* ADMIN */
 admin_orders.innerHTML=orders.map((o,i)=>`
 <div class="card">
 <b>${o.type}</b>
@@ -355,6 +305,11 @@ admin_orders.innerHTML=orders.map((o,i)=>`
 <button onclick="setStatus(${i},'Fertig')">Fertig</button>
 </div>
 `).join("");
+
+}catch(e){
+console.log("Render error",e);
+}
+
 }
 
 </script>
