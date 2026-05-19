@@ -1,511 +1,353 @@
-<!-- =========================================================
-KOMPLETTE ADMIN-ERWEITERUNG + PUNKTESYSTEM
-DIESEN BLOCK ZUSÄTZLICH IN DEINEN BESTEHENDEN CODE EINFÜGEN
-========================================================= -->
-
-<!-- =========================================================
-1. HEADER ERWEITERN
-DIREKT IM HEADER BEI DEN TABS EINFÜGEN
-========================================================= -->
-
-<button
-class="tab-btn"
-id="admin-orders-tab"
-style="display:none;"
-onclick="switchMainTab('admin-orders')">
-
-📋 Aufträge
-
-</button>
-
-<!-- =========================================================
-2. PUNKTEANZEIGE IM HEADER
-RECHTS OBEN IM HEADER EINFÜGEN
-========================================================= -->
-
-<div style="
-background:#eff6ff;
-border:1px solid #bfdbfe;
-padding:8px 14px;
-border-radius:999px;
-font-weight:700;
-font-size:.9rem;
-color:#2563eb;
-">
-
-⭐ <span id="header-points">0</span>
-
-</div>
-
-<!-- =========================================================
-3. ADMIN AUFTRAGSSEITE
-GANZ UNTEN VOR DEM TOAST EINFÜGEN
-========================================================= -->
-
-<div
-class="container"
-id="section-admin-orders"
-style="display:none;">
-
-<div class="card">
-
-<div style="
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:24px;
-flex-wrap:wrap;
-gap:12px;
-">
-
-<div>
-
-<h2 style="
-font-size:1.2rem;
-font-weight:700;
-margin-bottom:4px;
-">
-
-📋 Admin Aufträge
-
-</h2>
-
-<div style="
-font-size:.85rem;
-color:#6b7280;
-">
-
-Alle Druckaufträge verwalten
-
-</div>
-
-</div>
-
-<div style="
-background:#eff6ff;
-padding:10px 14px;
-border-radius:14px;
-font-weight:700;
-color:#2563eb;
-">
-
-Offene Aufträge:
-<span id="open-orders-count">0</span>
-
-</div>
-
-</div>
-
-<div id="admin-orders-list"></div>
-
-</div>
-
-</div>
-
-<!-- =========================================================
-4. STATUS DESIGN
-UNTER DEIN STYLE TAG EINFÜGEN
-========================================================= -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kreativlabor EGN</title>
 
 <style>
-
-.status-badge{
-
-padding:8px 14px;
-
-border-radius:999px;
-
-font-size:.75rem;
-
-font-weight:700;
-
-display:inline-flex;
-
-align-items:center;
+body{
+margin:0;
+font-family:Arial;
+background:#f3f4f6;
+color:#111;
 }
 
-.status-open{
-background:#eff6ff;
-color:#2563eb;
-}
-
-.status-download{
-background:#fef3c7;
-color:#b45309;
-}
-
-.status-print{
-background:#ede9fe;
-color:#7c3aed;
-}
-
-.status-finished{
-background:#dcfce7;
-color:#15803d;
-}
-
-</style>
-
-<!-- =========================================================
-5. SWITCH MAIN TAB ERSETZEN
-DEINE ALTE FUNKTION KOMPLETT ERSETZEN
-========================================================= -->
-
-<script>
-
-function switchMainTab(tab){
-
-document.getElementById(
-'section-order'
-).style.display =
-tab === 'order'
-? 'block'
-: 'none';
-
-document.getElementById(
-'section-db'
-).style.display =
-tab === 'db'
-? 'block'
-: 'none';
-
-document.getElementById(
-'section-admin-orders'
-).style.display =
-tab === 'admin-orders'
-? 'block'
-: 'none';
-
-document.getElementById(
-'main-tab-order'
-).classList.toggle(
-'active',
-tab === 'order'
-);
-
-document.getElementById(
-'main-tab-db'
-).classList.toggle(
-'active',
-tab === 'db'
-);
-
-if(document.getElementById('admin-orders-tab')){
-
-document.getElementById(
-'admin-orders-tab'
-).classList.toggle(
-'active',
-tab === 'admin-orders'
-);
-}
-
-if(tab === 'admin-orders'){
-
-renderAdminOrders();
-}
-}
-
-</script>
-
-<!-- =========================================================
-6. ADMIN LOGIN ERSETZEN
-DEINE ALTE openAdminLogin() ERSETZEN
-========================================================= -->
-
-<script>
-
-function openAdminLogin(){
-
-const p = prompt(
-'Admin Passwort eingeben'
-);
-
-if(p === ADMIN_PASSWORD){
-
-isAdmin = true;
-
-document.getElementById(
-'admin-orders-tab'
-).style.display='inline-flex';
-
-showToast(
-'Admin Modus aktiviert'
-);
-
-renderAdminOrders();
-
-}else if(p !== null){
-
-alert('Falsches Passwort!');
-}
-}
-
-</script>
-
-<!-- =========================================================
-7. AUFTRAGS STATUS HINZUFÜGEN
-IN submitStlOrder()
-========================================================= -->
-
-<!--
-DAS:
-
-orders.unshift({
-
-ERSETZEN DURCH:
--->
-
-orders.unshift({
-
-status:'Eingegangen',
-
-<!-- REST BLEIBT GLEICH -->
-
-});
-
-<!-- =========================================================
-8. PUNKTEANZEIGE AKTUALISIEREN
-DEINE updatePointsDisplay() ERSETZEN
-========================================================= -->
-
-<script>
-
-function updatePointsDisplay(){
-
-const p = getPoints();
-
-if(document.getElementById('db-points-num')){
-
-document.getElementById(
-'db-points-num'
-).textContent = p;
-}
-
-if(document.getElementById('header-points')){
-
-document.getElementById(
-'header-points'
-).textContent = p;
-}
-}
-
-</script>
-
-<!-- =========================================================
-9. ADMIN AUFTRÄGE RENDERN
-GANZ UNTEN IM SCRIPT EINFÜGEN
-========================================================= -->
-
-<script>
-
-function renderAdminOrders(){
-
-const list =
-document.getElementById(
-'admin-orders-list'
-);
-
-const orders = getOrders();
-
-document.getElementById(
-'open-orders-count'
-).textContent =
-orders.length;
-
-if(orders.length === 0){
-
-list.innerHTML = `
-<div style="
-color:#6b7280;
-padding:24px;
-text-align:center;
-">
-
-Keine Aufträge vorhanden.
-
-</div>
-`;
-
-return;
-}
-
-list.innerHTML =
-orders.map(o => `
-
-<div style="
-border:1px solid #e5e7eb;
-border-radius:18px;
-padding:20px;
-margin-bottom:18px;
+header{
 background:white;
-">
-
-<div style="
+padding:14px 20px;
 display:flex;
 justify-content:space-between;
-align-items:flex-start;
-margin-bottom:14px;
-gap:12px;
+align-items:center;
+border-bottom:1px solid #ddd;
+position:sticky;
+top:0;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:16px;
+border:1px solid #ddd;
+margin-bottom:20px;
+}
+
+input,textarea,select{
+width:100%;
+padding:12px;
+margin:8px 0 14px;
+border-radius:10px;
+border:1px solid #ccc;
+font-size:14px;
+}
+
+button{
+padding:12px 14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:700;
+}
+
+.btn{background:#2563eb;color:white}
+.btn2{background:#eee}
+
+.tabs{
+display:flex;
+gap:10px;
 flex-wrap:wrap;
-">
+margin-bottom:20px;
+}
+
+.badge{
+padding:6px 10px;
+border-radius:999px;
+font-size:12px;
+background:#e5e7eb;
+display:inline-block;
+}
+
+.hidden{display:none}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" style="position:fixed;inset:0;background:#fff;display:flex;justify-content:center;align-items:center;z-index:9999;">
+<div class="card" style="width:380px">
+<h2 style="margin-top:0">Kreativlabor EGN</h2>
+<p>Bitte anmelden</p>
+
+<input id="loginName" placeholder="Name">
+<input id="loginEmail" placeholder="E-Mail">
+
+<button class="btn" onclick="login()">Starten</button>
+</div>
+</div>
+
+<!-- HEADER -->
+<header>
+<div><b>Kreativlabor EGN</b></div>
 
 <div>
+⭐ <span id="points">0</span> Punkte
+</div>
+</header>
 
-<div style="
-font-weight:700;
-font-size:1rem;
-margin-bottom:6px;
-">
+<div class="container">
 
-${o.id}
-
+<!-- NAV -->
+<div class="tabs">
+<button class="btn2" onclick="show('idea')">Idee</button>
+<button class="btn2" onclick="show('stl')">STL Druck</button>
+<button class="btn2" onclick="show('db')">Datenbank</button>
+<button class="btn2 hidden" id="adminTab" onclick="show('admin')">Admin</button>
 </div>
 
-<div style="
-font-size:.85rem;
-color:#6b7280;
-line-height:1.5;
-white-space:pre-wrap;
-">
+<!-- IDEE -->
+<div id="idea">
+<div class="card">
+<h3>Idee / Reparatur</h3>
 
-${o.desc}
+<input id="i_name" placeholder="Name">
+<input id="i_class" placeholder="Klasse">
+<input id="i_email" placeholder="E-Mail">
 
+<input id="i_build" placeholder="Build / Skizze (optional)">
+<textarea id="i_desc" placeholder="Beschreibung"></textarea>
+
+<button class="btn" onclick="sendIdea()">Senden</button>
+</div>
 </div>
 
+<!-- STL -->
+<div id="stl" class="hidden">
+<div class="card">
+<h3>STL Auftrag</h3>
+
+<input id="s_name" placeholder="Name">
+<input id="s_class" placeholder="Klasse">
+
+<select id="pointsMode">
+<option value="none">Keine Punkte</option>
+<option value="discount">10% Rabatt (50 Punkte)</option>
+<option value="free">Freidruck (250 Punkte)</option>
+</select>
+
+<input type="file" id="file">
+<textarea id="s_desc"></textarea>
+
+<div class="card">
+Preis: <b id="price">10 €</b>
 </div>
 
-<div class="
-status-badge
-${getStatusClass(o.status)}
-">
-
-${o.status || 'Eingegangen'}
-
+<button class="btn" onclick="sendStl()">Bestellen</button>
+</div>
 </div>
 
+<!-- DB -->
+<div id="db" class="hidden">
+<div class="card">
+<h3>Modell Datenbank</h3>
+
+<input id="db_title" placeholder="Titel">
+<textarea id="db_desc"></textarea>
+
+<button class="btn" onclick="uploadModel()">Upload</button>
 </div>
 
-<div style="
-display:flex;
-flex-wrap:wrap;
-gap:10px;
-margin-top:18px;
-">
+<div id="db_list"></div>
+</div>
 
-<button
-class="btn-secondary"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Heruntergeladen'
-)
-">
-
-⬇ Heruntergeladen
-
-</button>
-
-<button
-class="btn-secondary"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Am Drucken'
-)
-">
-
-🖨 Am Drucken
-
-</button>
-
-<button
-class="btn-secondary"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Fertig'
-)
-">
-
-✅ Fertig
-
-</button>
-
-<button
-class="btn-primary"
-style="background:#16a34a;"
-onclick="
-finishOrder(
-'${o.id}'
-)
-">
-
-✔ Abgeholt
-
-</button>
-
+<!-- ADMIN -->
+<div id="admin" class="hidden">
+<div class="card">
+<h3>Admin Dashboard</h3>
+<div id="admin_list"></div>
+</div>
 </div>
 
 </div>
 
+<script>
+
+let orders=[];
+let models=[];
+let points=0;
+let user={};
+
+const ADMIN_PASSWORD="kreativlabor2026";
+
+function login(){
+user.name=document.getElementById('loginName').value;
+user.email=document.getElementById('loginEmail').value;
+
+if(!user.name||!user.email)return;
+
+document.getElementById('loginScreen').style.display='none';
+}
+
+function show(tab){
+["idea","stl","db","admin"].forEach(id=>{
+document.getElementById(id).classList.add("hidden");
+});
+
+document.getElementById(tab).classList.remove("hidden");
+
+if(tab==="admin")renderAdmin();
+}
+
+function updatePoints(){
+document.getElementById("points").innerText=points;
+}
+
+function save(){
+localStorage.setItem("orders",JSON.stringify(orders));
+localStorage.setItem("models",JSON.stringify(models));
+localStorage.setItem("points",points);
+}
+
+function load(){
+orders=JSON.parse(localStorage.getItem("orders")||"[]");
+models=JSON.parse(localStorage.getItem("models")||"[]");
+points=parseInt(localStorage.getItem("points")||0);
+
+updatePoints();
+renderModels();
+}
+
+load();
+
+/* ---------- IDEE ---------- */
+function sendIdea(){
+
+orders.unshift({
+type:"Idee",
+desc:document.getElementById("i_desc").value,
+status:"offen"
+});
+
+save();
+alert("Gesendet");
+}
+
+/* ---------- STL ---------- */
+function sendStl(){
+
+let price=10;
+
+let mode=document.getElementById("pointsMode").value;
+
+// Rabatt
+if(mode==="discount" && points>=50){
+points-=50;
+price=Math.round(price*0.9);
+}
+
+// Freidruck
+if(mode==="free" && points>=250){
+points-=250;
+price=0;
+}
+
+// KEIN MINUS
+if(points<0)points=0;
+
+// Belohnung
+points+=10;
+
+orders.unshift({
+type:"STL",
+desc:document.getElementById("s_desc").value,
+status:"offen",
+price:Math.round(price)
+});
+
+save();
+updatePoints();
+
+alert("Bestellt");
+}
+
+/* ---------- DB ---------- */
+function uploadModel(){
+
+models.unshift({
+title:document.getElementById("db_title").value,
+desc:document.getElementById("db_desc").value
+});
+
+points+=25;
+
+save();
+updatePoints();
+renderModels();
+
+alert("Upload fertig");
+}
+
+function renderModels(){
+
+document.getElementById("db_list").innerHTML=
+
+models.map(m=>`
+<div class="card">
+<b>${m.title}</b>
+<p>${m.desc}</p>
+</div>
 `).join('');
 }
 
-function getStatusClass(status){
+/* ---------- ADMIN ---------- */
+function adminLogin(){
 
-if(status === 'Eingegangen')
-return 'status-open';
+let pw=prompt("Admin Passwort");
 
-if(status === 'Heruntergeladen')
-return 'status-download';
+if(pw===ADMIN_PASSWORD){
 
-if(status === 'Am Drucken')
-return 'status-print';
+document.getElementById("adminTab").classList.remove("hidden");
 
-if(status === 'Fertig')
-return 'status-finished';
+show("admin");
 
-return 'status-open';
-}
+renderAdmin();
 
-function updateOrderStatus(id,status){
-
-const orders = getOrders();
-
-const order =
-orders.find(o => o.id === id);
-
-if(order){
-
-order.status = status;
-
-saveOrders(orders);
-
-renderOrders();
-
-renderAdminOrders();
+}else{
+alert("Falsch");
 }
 }
 
-function finishOrder(id){
+function renderAdmin(){
 
-let orders = getOrders();
+document.getElementById("admin_list").innerHTML=
 
-orders =
-orders.filter(
-o => o.id !== id
-);
+orders.map((o,i)=>`
+<div class="card">
+<b>${o.type}</b>
+<p>${o.desc}</p>
+<span class="badge">${o.status}</span>
 
-saveOrders(orders);
+<br><br>
 
-renderOrders();
+<button class="btn" onclick="finish(${i})">Fertig</button>
+</div>
+`).join('');
+}
 
-renderAdminOrders();
-
-showToast(
-'Auftrag abgeschlossen'
-);
+function finish(i){
+orders.splice(i,1);
+save();
+renderAdmin();
 }
 
 </script>
+
+</body>
+</html>
