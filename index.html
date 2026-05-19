@@ -1,178 +1,96 @@
 <!-- =========================================================
-ADMIN SYSTEM + AUFTRAGSVERWALTUNG + PUNKTECENTER
-DIESE TEILE ZUSÄTZLICH IN DEINEN CODE EINFÜGEN
+KOMPLETTE ADMIN-ERWEITERUNG + PUNKTESYSTEM
+DIESEN BLOCK ZUSÄTZLICH IN DEINEN BESTEHENDEN CODE EINFÜGEN
 ========================================================= -->
 
-<!-- =========================
+<!-- =========================================================
 1. HEADER ERWEITERN
-========================= -->
+DIREKT IM HEADER BEI DEN TABS EINFÜGEN
+========================================================= -->
 
-<!-- DIREKT IN DEINE TABS EINFÜGEN -->
+<button
+class="tab-btn"
+id="admin-orders-tab"
+style="display:none;"
+onclick="switchMainTab('admin-orders')">
 
-<button class="tab" id="admin-orders-tab"
-onclick="switchTab('admin-orders')"
+📋 Aufträge
+
+</button>
+
+<!-- =========================================================
+2. PUNKTEANZEIGE IM HEADER
+RECHTS OBEN IM HEADER EINFÜGEN
+========================================================= -->
+
+<div style="
+background:#eff6ff;
+border:1px solid #bfdbfe;
+padding:8px 14px;
+border-radius:999px;
+font-weight:700;
+font-size:.9rem;
+color:#2563eb;
+">
+
+⭐ <span id="header-points">0</span>
+
+</div>
+
+<!-- =========================================================
+3. ADMIN AUFTRAGSSEITE
+GANZ UNTEN VOR DEM TOAST EINFÜGEN
+========================================================= -->
+
+<div
+class="container"
+id="section-admin-orders"
 style="display:none;">
-
-Admin Aufträge
-
-</button>
-
-<button class="tab"
-onclick="switchTab('points')">
-
-Punktecenter
-
-</button>
-
-<!-- =========================
-2. PUNKTECENTER
-========================= -->
-
-<div id="points-section" style="display:none;">
 
 <div class="card">
 
-<div class="card-title">
-⭐ Punktecenter
-</div>
-
 <div style="
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:18px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:24px;
+flex-wrap:wrap;
+gap:12px;
 ">
 
-<div style="
-padding:24px;
-border-radius:22px;
-background:linear-gradient(
-135deg,
-#2563eb,
-#1d4ed8
-);
-color:white;
+<div>
+
+<h2 style="
+font-size:1.2rem;
+font-weight:700;
+margin-bottom:4px;
 ">
+
+📋 Admin Aufträge
+
+</h2>
 
 <div style="
 font-size:.85rem;
-opacity:.8;
-margin-bottom:10px;
+color:#6b7280;
 ">
 
-DEIN PUNKTESTAND
+Alle Druckaufträge verwalten
 
 </div>
 
-<div id="big-points-display"
-style="
-font-size:3rem;
+</div>
+
+<div style="
+background:#eff6ff;
+padding:10px 14px;
+border-radius:14px;
 font-weight:700;
+color:#2563eb;
 ">
 
-0
-
-</div>
-
-</div>
-
-<div style="
-padding:24px;
-border-radius:22px;
-background:#f9fafb;
-border:1px solid #e5e7eb;
-">
-
-<div style="
-font-size:1rem;
-font-weight:700;
-margin-bottom:14px;
-">
-
-🎁 Belohnungen
-
-</div>
-
-<div style="margin-bottom:10px;">
-50 Punkte → 10% Rabatt
-</div>
-
-<div style="margin-bottom:10px;">
-120 Punkte → 25% Rabatt
-</div>
-
-<div style="margin-bottom:10px;">
-250 Punkte → Gratis Kleinteil
-</div>
-
-<div style="margin-bottom:10px;">
-400 Punkte → Prioritätsdruck
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- =========================
-3. ADMIN AUFTRÄGE
-========================= -->
-
-<div id="admin-orders-section"
-style="display:none;">
-
-<div class="card">
-
-<div class="card-title">
-🔑 Admin Auftragsverwaltung
-</div>
-
-<div style="
-display:grid;
-grid-template-columns:
-repeat(auto-fit,minmax(200px,1fr));
-gap:18px;
-margin-bottom:24px;
-">
-
-<div class="stat-box">
-
-<div class="stat-label">
-OFFENE AUFTRÄGE
-</div>
-
-<div class="stat-number"
-id="admin-open-count">
-0
-</div>
-
-</div>
-
-<div class="stat-box">
-
-<div class="stat-label">
-AM DRUCKEN
-</div>
-
-<div class="stat-number"
-id="admin-printing-count">
-0
-</div>
-
-</div>
-
-<div class="stat-box">
-
-<div class="stat-label">
-FERTIG
-</div>
-
-<div class="stat-number"
-id="admin-finished-count">
-0
-</div>
+Offene Aufträge:
+<span id="open-orders-count">0</span>
 
 </div>
 
@@ -184,42 +102,12 @@ id="admin-finished-count">
 
 </div>
 
-<!-- =========================
-4. EXTRA STYLES
-========================= -->
+<!-- =========================================================
+4. STATUS DESIGN
+UNTER DEIN STYLE TAG EINFÜGEN
+========================================================= -->
 
 <style>
-
-.stat-box{
-
-padding:20px;
-
-border-radius:20px;
-
-background:#f9fafb;
-
-border:1px solid #e5e7eb;
-}
-
-.stat-label{
-
-font-size:.8rem;
-
-font-weight:700;
-
-color:#6b7280;
-
-margin-bottom:10px;
-}
-
-.stat-number{
-
-font-size:2rem;
-
-font-weight:700;
-
-color:#2563eb;
-}
 
 .status-badge{
 
@@ -256,180 +144,234 @@ background:#dcfce7;
 color:#15803d;
 }
 
-.status-done{
-background:#e5e7eb;
-color:#374151;
-}
-
 </style>
 
-<!-- =========================
-5. TAB SYSTEM ERWEITERN
-========================= -->
+<!-- =========================================================
+5. SWITCH MAIN TAB ERSETZEN
+DEINE ALTE FUNKTION KOMPLETT ERSETZEN
+========================================================= -->
 
 <script>
 
-function switchTab(tab){
+function switchMainTab(tab){
 
 document.getElementById(
-'orders-section'
-).style.display='none';
+'section-order'
+).style.display =
+tab === 'order'
+? 'block'
+: 'none';
 
 document.getElementById(
-'models-section'
-).style.display='none';
+'section-db'
+).style.display =
+tab === 'db'
+? 'block'
+: 'none';
 
 document.getElementById(
-'upload-section'
-).style.display='none';
+'section-admin-orders'
+).style.display =
+tab === 'admin-orders'
+? 'block'
+: 'none';
 
 document.getElementById(
-'shop-section'
-).style.display='none';
+'main-tab-order'
+).classList.toggle(
+'active',
+tab === 'order'
+);
 
 document.getElementById(
-'points-section'
-).style.display='none';
+'main-tab-db'
+).classList.toggle(
+'active',
+tab === 'db'
+);
+
+if(document.getElementById('admin-orders-tab')){
 
 document.getElementById(
-'admin-orders-section'
-).style.display='none';
-
-if(tab==='orders'){
-document.getElementById(
-'orders-section'
-).style.display='block';
+'admin-orders-tab'
+).classList.toggle(
+'active',
+tab === 'admin-orders'
+);
 }
 
-if(tab==='models'){
-document.getElementById(
-'models-section'
-).style.display='block';
-}
-
-if(tab==='upload'){
-document.getElementById(
-'upload-section'
-).style.display='block';
-}
-
-if(tab==='shop'){
-document.getElementById(
-'shop-section'
-).style.display='block';
-}
-
-if(tab==='points'){
-document.getElementById(
-'points-section'
-).style.display='block';
-}
-
-if(tab==='admin-orders'){
-document.getElementById(
-'admin-orders-section'
-).style.display='block';
+if(tab === 'admin-orders'){
 
 renderAdminOrders();
 }
-
 }
 
 </script>
 
-<!-- =========================
-6. AUFTRÄGE MIT STATUS
-========================= -->
+<!-- =========================================================
+6. ADMIN LOGIN ERSETZEN
+DEINE ALTE openAdminLogin() ERSETZEN
+========================================================= -->
 
 <script>
 
-function submitStl(){
+function openAdminLogin(){
 
-const orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
+const p = prompt(
+'Admin Passwort eingeben'
 );
+
+if(p === ADMIN_PASSWORD){
+
+isAdmin = true;
+
+document.getElementById(
+'admin-orders-tab'
+).style.display='inline-flex';
+
+showToast(
+'Admin Modus aktiviert'
+);
+
+renderAdminOrders();
+
+}else if(p !== null){
+
+alert('Falsches Passwort!');
+}
+}
+
+</script>
+
+<!-- =========================================================
+7. AUFTRAGS STATUS HINZUFÜGEN
+IN submitStlOrder()
+========================================================= -->
+
+<!--
+DAS:
 
 orders.unshift({
 
-id:'O-'+Date.now(),
+ERSETZEN DURCH:
+-->
 
-type:'STL Druck',
+orders.unshift({
 
 status:'Eingegangen',
 
-weight:currentWeight,
-
-price:currentPrice,
-
-createdAt:Date.now()
+<!-- REST BLEIBT GLEICH -->
 
 });
 
-localStorage.setItem(
-ORDER_KEY,
-JSON.stringify(orders)
-);
+<!-- =========================================================
+8. PUNKTEANZEIGE AKTUALISIEREN
+DEINE updatePointsDisplay() ERSETZEN
+========================================================= -->
 
-addPoints(
-Math.min(currentWeight,80)
-);
+<script>
 
-renderOrders();
+function updatePointsDisplay(){
 
-updatePoints();
+const p = getPoints();
+
+if(document.getElementById('db-points-num')){
 
 document.getElementById(
-'stl-success'
-).style.display='block';
+'db-points-num'
+).textContent = p;
+}
+
+if(document.getElementById('header-points')){
+
+document.getElementById(
+'header-points'
+).textContent = p;
+}
 }
 
 </script>
 
-<!-- =========================
-7. USER AUFTRÄGE MIT STATUS
-========================= -->
+<!-- =========================================================
+9. ADMIN AUFTRÄGE RENDERN
+GANZ UNTEN IM SCRIPT EINFÜGEN
+========================================================= -->
 
 <script>
 
-function renderOrders(){
-
-const orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
-);
+function renderAdminOrders(){
 
 const list =
 document.getElementById(
-'orders-list'
+'admin-orders-list'
 );
 
-if(orders.length===0){
+const orders = getOrders();
 
-list.innerHTML='Keine Aufträge.';
+document.getElementById(
+'open-orders-count'
+).textContent =
+orders.length;
+
+if(orders.length === 0){
+
+list.innerHTML = `
+<div style="
+color:#6b7280;
+padding:24px;
+text-align:center;
+">
+
+Keine Aufträge vorhanden.
+
+</div>
+`;
+
 return;
 }
 
 list.innerHTML =
-orders.map(o=>`
+orders.map(o => `
 
-<div class="order">
+<div style="
+border:1px solid #e5e7eb;
+border-radius:18px;
+padding:20px;
+margin-bottom:18px;
+background:white;
+">
 
 <div style="
 display:flex;
 justify-content:space-between;
-align-items:center;
+align-items:flex-start;
 margin-bottom:14px;
+gap:12px;
+flex-wrap:wrap;
 ">
+
+<div>
 
 <div style="
 font-weight:700;
 font-size:1rem;
+margin-bottom:6px;
 ">
 
-${o.type}
+${o.id}
+
+</div>
+
+<div style="
+font-size:.85rem;
+color:#6b7280;
+line-height:1.5;
+white-space:pre-wrap;
+">
+
+${o.desc}
+
+</div>
 
 </div>
 
@@ -438,31 +380,70 @@ status-badge
 ${getStatusClass(o.status)}
 ">
 
-${o.status}
+${o.status || 'Eingegangen'}
 
 </div>
 
 </div>
 
 <div style="
-margin-bottom:10px;
-color:#6b7280;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:18px;
 ">
 
-${o.weight || 0}g
-
-</div>
-
-<div style="
-font-size:1.1rem;
-font-weight:700;
-color:#2563eb;
+<button
+class="btn-secondary"
+onclick="
+updateOrderStatus(
+'${o.id}',
+'Heruntergeladen'
+)
 ">
 
-${o.price ?
-o.price.toFixed(2)+' €'
-:
-''}
+⬇ Heruntergeladen
+
+</button>
+
+<button
+class="btn-secondary"
+onclick="
+updateOrderStatus(
+'${o.id}',
+'Am Drucken'
+)
+">
+
+🖨 Am Drucken
+
+</button>
+
+<button
+class="btn-secondary"
+onclick="
+updateOrderStatus(
+'${o.id}',
+'Fertig'
+)
+">
+
+✅ Fertig
+
+</button>
+
+<button
+class="btn-primary"
+style="background:#16a34a;"
+onclick="
+finishOrder(
+'${o.id}'
+)
+">
+
+✔ Abgeholt
+
+</button>
 
 </div>
 
@@ -473,238 +454,33 @@ o.price.toFixed(2)+' €'
 
 function getStatusClass(status){
 
-if(status==='Eingegangen')
+if(status === 'Eingegangen')
 return 'status-open';
 
-if(status==='Heruntergeladen')
+if(status === 'Heruntergeladen')
 return 'status-download';
 
-if(status==='Am Drucken')
+if(status === 'Am Drucken')
 return 'status-print';
 
-if(status==='Fertig')
+if(status === 'Fertig')
 return 'status-finished';
 
-if(status==='Abgeholt')
-return 'status-done';
-
 return 'status-open';
-}
-
-</script>
-
-<!-- =========================
-8. ADMIN LOGIN
-========================= -->
-
-<script>
-
-function adminLogin(){
-
-const pw =
-prompt(
-'Admin Passwort'
-);
-
-if(pw!=='egn'){
-
-alert(
-'Falsches Passwort.'
-);
-
-return;
-}
-
-document.getElementById(
-'admin-orders-tab'
-).style.display='inline-flex';
-
-alert(
-'Admin Modus aktiviert.'
-);
-
-renderAdminOrders();
-}
-
-</script>
-
-<!-- =========================
-9. ADMIN AUFTRÄGE RENDERN
-========================= -->
-
-<script>
-
-function renderAdminOrders(){
-
-const orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
-);
-
-const wrap =
-document.getElementById(
-'admin-orders-list'
-);
-
-document.getElementById(
-'admin-open-count'
-).innerText =
-orders.filter(
-o=>o.status==='Eingegangen'
-).length;
-
-document.getElementById(
-'admin-printing-count'
-).innerText =
-orders.filter(
-o=>o.status==='Am Drucken'
-).length;
-
-document.getElementById(
-'admin-finished-count'
-).innerText =
-orders.filter(
-o=>o.status==='Fertig'
-).length;
-
-if(orders.length===0){
-
-wrap.innerHTML='Keine Aufträge.';
-return;
-}
-
-wrap.innerHTML =
-orders.map(o=>`
-
-<div class="admin-order">
-
-<div style="
-display:flex;
-justify-content:space-between;
-align-items:center;
-margin-bottom:18px;
-">
-
-<div>
-
-<div style="
-font-weight:700;
-font-size:1.05rem;
-">
-
-${o.type}
-
-</div>
-
-<div style="
-font-size:.85rem;
-color:#6b7280;
-">
-
-${o.weight || 0}g
-
-</div>
-
-</div>
-
-<div class="
-status-badge
-${getStatusClass(o.status)}
-">
-
-${o.status}
-
-</div>
-
-</div>
-
-<div style="
-display:flex;
-gap:10px;
-flex-wrap:wrap;
-">
-
-<button class="btn"
-style="height:44px;"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Heruntergeladen'
-)
-">
-
-Heruntergeladen
-
-</button>
-
-<button class="btn"
-style="height:44px;"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Am Drucken'
-)
-">
-
-Am Drucken
-
-</button>
-
-<button class="btn"
-style="height:44px;"
-onclick="
-updateOrderStatus(
-'${o.id}',
-'Fertig'
-)
-">
-
-Fertig
-
-</button>
-
-<button class="btn"
-style="
-height:44px;
-background:#16a34a;
-"
-onclick="
-finishOrder(
-'${o.id}'
-)
-">
-
-Abgeholt
-
-</button>
-
-</div>
-
-</div>
-
-`).join('');
 }
 
 function updateOrderStatus(id,status){
 
-const orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
-);
+const orders = getOrders();
 
 const order =
-orders.find(o=>o.id===id);
+orders.find(o => o.id === id);
 
 if(order){
 
-order.status=status;
+order.status = status;
 
-localStorage.setItem(
-ORDER_KEY,
-JSON.stringify(orders)
-);
+saveOrders(orders);
 
 renderOrders();
 
@@ -714,56 +490,22 @@ renderAdminOrders();
 
 function finishOrder(id){
 
-let orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
-);
+let orders = getOrders();
 
 orders =
 orders.filter(
-o=>o.id!==id
+o => o.id !== id
 );
 
-localStorage.setItem(
-ORDER_KEY,
-JSON.stringify(orders)
-);
+saveOrders(orders);
 
 renderOrders();
 
 renderAdminOrders();
-}
 
-</script>
-
-<!-- =========================
-10. PUNKTE LIVE AKTUALISIEREN
-========================= -->
-
-<script>
-
-function updatePoints(){
-
-const points =
-localStorage.getItem(
-POINT_KEY
-) || 0;
-
-document.getElementById(
-'points'
-).innerText =
-points;
-
-const big =
-document.getElementById(
-'big-points-display'
+showToast(
+'Auftrag abgeschlossen'
 );
-
-if(big){
-
-big.innerText = points;
-}
 }
 
 </script>
