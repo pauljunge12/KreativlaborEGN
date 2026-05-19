@@ -1,62 +1,287 @@
-<!-- =========================================================
-KREATIVLABOR EGN — PROFESSIONAL EDITION v12
-ÜBERARBEITETE STRUKTUR
-- Login System
-- Admin Dashboard
-- Build/Skizzen Upload
-- Separate Modell-Datenbank
-- Punkte-Shop
-- Sicheres Rabatt-System ohne Minus
-========================================================= -->
-
 <!-- =========================
-1. LOGIN SCREEN
+PROFESSIONELLER LOGIN SCREEN
 ========================= -->
 
-<body>
+<style>
 
-<div id="login-screen" style="position:fixed;inset:0;background:#f4f3f0;display:flex;align-items:center;justify-content:center;z-index:9999;">
-  <div style="width:420px;background:white;padding:32px;border-radius:14px;border:1px solid #ddd;">
-    
-    <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">
-      Kreativlabor EGN
-    </h1>
+#login-screen{
+  position:fixed;
+  inset:0;
+  background:
+  linear-gradient(
+    135deg,
+    #f5f7fa 0%,
+    #eef2f7 100%
+  );
 
-    <p style="margin-bottom:24px;color:#666;">
-      Bitte melde dich mit deiner Schul-E-Mail an.
-    </p>
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:99999;
 
-    <div class="form-group">
-      <label>Vor- und Nachname</label>
-      <input type="text" id="login-name" class="form-control">
-    </div>
+  font-family:'DM Sans',sans-serif;
+}
 
-    <div class="form-group">
-      <label>Klasse</label>
-      <input type="text" id="login-class" class="form-control">
-    </div>
+.login-wrapper{
+  width:100%;
+  max-width:520px;
+  padding:40px;
+}
 
-    <div class="form-group">
-      <label>Schul-E-Mail</label>
-      <input type="email" id="login-email" class="form-control"
-      placeholder="name@egn-nordhorn.de">
-    </div>
+.login-card{
 
-    <button class="btn-primary" style="width:100%;"
-    onclick="loginUser()">
-      Anmelden
-    </button>
+  background:white;
 
-    <div id="login-error"
-    style="display:none;color:#c2410c;margin-top:14px;font-size:.85rem;">
+  border:1px solid #e5e7eb;
+
+  border-radius:24px;
+
+  padding:42px;
+
+  box-shadow:
+  0 10px 30px rgba(0,0,0,0.06);
+
+}
+
+.login-logo{
+
+  width:70px;
+  height:70px;
+
+  border-radius:18px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  color:white;
+
+  font-size:1.8rem;
+  font-weight:700;
+
+  margin-bottom:26px;
+}
+
+.login-title{
+
+  font-size:2rem;
+  font-weight:700;
+
+  letter-spacing:-0.04em;
+
+  color:#111827;
+
+  margin-bottom:10px;
+}
+
+.login-subtitle{
+
+  color:#6b7280;
+
+  line-height:1.6;
+
+  margin-bottom:34px;
+
+  font-size:1rem;
+}
+
+.login-form-group{
+  margin-bottom:20px;
+}
+
+.login-form-group label{
+
+  display:block;
+
+  margin-bottom:8px;
+
+  font-size:.9rem;
+
+  font-weight:600;
+
+  color:#111827;
+}
+
+.login-input{
+
+  width:100%;
+
+  height:56px;
+
+  border:1px solid #d1d5db;
+
+  border-radius:14px;
+
+  padding:0 18px;
+
+  font-size:1rem;
+
+  background:#f9fafb;
+
+  transition:all .18s ease;
+}
+
+.login-input:focus{
+
+  outline:none;
+
+  border-color:#2563eb;
+
+  background:white;
+
+  box-shadow:
+  0 0 0 4px rgba(37,99,235,.12);
+}
+
+.login-btn{
+
+  width:100%;
+
+  height:58px;
+
+  border:none;
+
+  border-radius:16px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #2563eb,
+    #1d4ed8
+  );
+
+  color:white;
+
+  font-size:1rem;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:all .18s ease;
+
+  margin-top:10px;
+}
+
+.login-btn:hover{
+
+  transform:translateY(-1px);
+
+  box-shadow:
+  0 10px 24px rgba(37,99,235,.22);
+}
+
+.login-error{
+
+  display:none;
+
+  margin-top:18px;
+
+  background:#fef2f2;
+
+  border:1px solid #fecaca;
+
+  color:#b91c1c;
+
+  padding:14px;
+
+  border-radius:12px;
+
+  font-size:.9rem;
+}
+
+.login-footer{
+
+  margin-top:26px;
+
+  text-align:center;
+
+  color:#9ca3af;
+
+  font-size:.82rem;
+}
+
+</style>
+
+<div id="login-screen">
+
+  <div class="login-wrapper">
+
+    <div class="login-card">
+
+      <div class="login-logo">
+        EGN
+      </div>
+
+      <div class="login-title">
+        Kreativlabor Portal
+      </div>
+
+      <div class="login-subtitle">
+        Melde dich an, um Druckaufträge,
+        Modell-Uploads und Reparaturanfragen
+        verwalten zu können.
+      </div>
+
+      <div class="login-form-group">
+        <label>Vor- und Nachname</label>
+
+        <input
+        type="text"
+        id="login-name"
+        class="login-input"
+        placeholder="Max Mustermann">
+      </div>
+
+      <div class="login-form-group">
+        <label>Klasse / Kurs</label>
+
+        <input
+        type="text"
+        id="login-class"
+        class="login-input"
+        placeholder="z.B. 10A">
+      </div>
+
+      <div class="login-form-group">
+        <label>E-Mail-Adresse</label>
+
+        <input
+        type="email"
+        id="login-email"
+        class="login-input"
+        placeholder="deine@email.de">
+      </div>
+
+      <button
+      class="login-btn"
+      onclick="loginUser()">
+
+        Weiter zum Portal
+
+      </button>
+
+      <div
+      id="login-error"
+      class="login-error">
+      </div>
+
+      <div class="login-footer">
+        Kreativlabor EGN · Professional Edition
+      </div>
+
     </div>
 
   </div>
-</div>
 
-<!-- =========================
-2. USER SESSION
-========================= -->
+</div>
 
 <script>
 
@@ -64,40 +289,75 @@ const USER_KEY = "egn_current_user";
 
 function loginUser(){
 
-  const name = document.getElementById('login-name').value.trim();
-  const clazz = document.getElementById('login-class').value.trim();
-  const email = document.getElementById('login-email').value.trim();
+  const name =
+  document.getElementById(
+    'login-name'
+  ).value.trim();
 
-  const err = document.getElementById('login-error');
+  const clazz =
+  document.getElementById(
+    'login-class'
+  ).value.trim();
+
+  const email =
+  document.getElementById(
+    'login-email'
+  ).value.trim();
+
+  const err =
+  document.getElementById(
+    'login-error'
+  );
 
   err.style.display = 'none';
 
   if(!name || !clazz || !email){
-    err.innerText = "Bitte alle Felder ausfüllen.";
+
+    err.innerText =
+    "Bitte alle Felder ausfüllen.";
+
     err.style.display = 'block';
+
     return;
   }
 
-  if(!email.endsWith('@egn-nordhorn.de')){
-    err.innerText = "Nur Schul-E-Mails erlaubt.";
+  if(!email.includes('@')){
+
+    err.innerText =
+    "Bitte gib eine gültige E-Mail-Adresse ein.";
+
     err.style.display = 'block';
+
     return;
   }
 
-  localStorage.setItem(USER_KEY, JSON.stringify({
-    name,
-    class: clazz,
-    email
-  }));
+  localStorage.setItem(
+    USER_KEY,
 
-  document.getElementById('login-screen').style.display = 'none';
+    JSON.stringify({
+
+      name,
+      class: clazz,
+      email
+
+    })
+  );
+
+  document.getElementById(
+    'login-screen'
+  ).style.display = 'none';
 
   autofillUserData();
+
+  showToast("Erfolgreich angemeldet.");
 }
 
 function autofillUserData(){
 
-  const user = JSON.parse(localStorage.getItem(USER_KEY));
+  const user =
+  JSON.parse(
+    localStorage.getItem(USER_KEY)
+  );
 
   if(!user) return;
 
@@ -105,8 +365,11 @@ function autofillUserData(){
     'idea-name',
     'stl-name'
   ].forEach(id=>{
+
     if(document.getElementById(id)){
-      document.getElementById(id).value = user.name;
+
+      document.getElementById(id).value =
+      user.name;
     }
   });
 
@@ -114,8 +377,11 @@ function autofillUserData(){
     'idea-class',
     'stl-class'
   ].forEach(id=>{
+
     if(document.getElementById(id)){
-      document.getElementById(id).value = user.class;
+
+      document.getElementById(id).value =
+      user.class;
     }
   });
 
@@ -123,18 +389,26 @@ function autofillUserData(){
     'idea-email',
     'stl-email'
   ].forEach(id=>{
+
     if(document.getElementById(id)){
-      document.getElementById(id).value = user.email;
+
+      document.getElementById(id).value =
+      user.email;
     }
   });
 }
 
-window.onload = () => {
+window.onload = ()=>{
 
-  const user = localStorage.getItem(USER_KEY);
+  const user =
+  localStorage.getItem(USER_KEY);
 
   if(user){
-    document.getElementById('login-screen').style.display = 'none';
+
+    document.getElementById(
+      'login-screen'
+    ).style.display = 'none';
+
     autofillUserData();
   }
 
@@ -142,476 +416,5 @@ window.onload = () => {
   renderDB();
   updatePointsDisplay();
 };
-
-</script>
-
-<!-- =========================
-3. BUILD / SKIZZEN UPLOAD
-========================= -->
-
-<div class="form-group">
-  <label>Build / Skizze / Reparaturbild</label>
-
-  <div class="dropzone"
-  onclick="document.getElementById('idea-image').click()">
-
-    <input
-    type="file"
-    id="idea-image"
-    accept=".png,.jpg,.jpeg,.pdf"
-    style="display:none;"
-    onchange="handleIdeaImage(this.files[0])">
-
-    <div id="idea-image-text">
-      📷 Bild oder Skizze hochladen
-    </div>
-
-  </div>
-</div>
-
-<script>
-
-let ideaImage = null;
-
-function handleIdeaImage(file){
-
-  if(!file) return;
-
-  ideaImage = file;
-
-  document.getElementById('idea-image-text').innerHTML =
-  `
-  ✅ ${file.name}
-  `;
-}
-
-</script>
-
-<!-- =========================
-4. SEPARATE MODELL DATENBANK
-========================= -->
-
-<button class="tab-btn"
-onclick="switchMainTab('upload')">
-📚 Modell Upload
-</button>
-
-<div class="container"
-id="section-upload"
-style="display:none;">
-
-<div class="card">
-
-<h2>Eigenes Modell hochladen</h2>
-
-<div class="form-group">
-<label>STL Datei</label>
-
-<input type="file"
-accept=".stl">
-</div>
-
-<div class="form-group">
-<label>Vorschaubild</label>
-
-<input type="file"
-accept=".png,.jpg,.jpeg">
-</div>
-
-<div class="form-group">
-<label>Modellname</label>
-
-<input type="text"
-class="form-control">
-</div>
-
-<div class="form-group">
-<label>Beschreibung</label>
-
-<textarea
-class="form-control"
-rows="4"></textarea>
-</div>
-
-<div class="form-group">
-<label>Kategorie</label>
-
-<select class="form-control">
-
-<option>Deko</option>
-<option>Ersatzteil</option>
-<option>Schule</option>
-<option>Werkzeug</option>
-
-</select>
-</div>
-
-<button class="btn-primary">
-Modell veröffentlichen
-</button>
-
-</div>
-</div>
-
-<!-- =========================
-5. PUNKTE SYSTEM OHNE MINUS
-========================= -->
-
-<script>
-
-function calculateSafeDiscount(price){
-
-  // MINDESTKOSTEN
-  const minimumCost = calculatedPrice.filCost;
-
-  // maximaler Rabatt
-  const maxDiscount = price - minimumCost;
-
-  return Math.max(0, maxDiscount);
-}
-
-</script>
-
-<!-- =========================
-6. PUNKTE SHOP
-========================= -->
-
-<div class="card">
-
-<h2>⭐ Punkte Shop</h2>
-
-<div style="display:grid;gap:12px;">
-
-<div class="shop-item">
-  <div>
-    <b>10% Rabatt</b>
-    <div>50 Punkte</div>
-  </div>
-
-  <button onclick="redeemReward(50,'10')"
-  class="btn-primary">
-    Einlösen
-  </button>
-</div>
-
-<div class="shop-item">
-  <div>
-    <b>25% Rabatt</b>
-    <div>120 Punkte</div>
-  </div>
-
-  <button onclick="redeemReward(120,'25')"
-  class="btn-primary">
-    Einlösen
-  </button>
-</div>
-
-<div class="shop-item">
-  <div>
-    <b>Kleinteil gratis (&lt;10g)</b>
-    <div>250 Punkte</div>
-  </div>
-
-  <button onclick="redeemReward(250,'free-small')"
-  class="btn-primary">
-    Einlösen
-  </button>
-</div>
-
-</div>
-</div>
-
-<script>
-
-let activeReward = null;
-
-function redeemReward(cost,reward){
-
-  const points = getPoints();
-
-  if(points < cost){
-
-    showToast("Nicht genug Punkte.");
-    return;
-  }
-
-  activeReward = {
-    cost,
-    reward
-  };
-
-  showToast("Belohnung aktiviert.");
-}
-
-</script>
-
-<!-- =========================
-7. STL RABATT ANWENDEN
-========================= -->
-
-<div style="
-border:1px solid #ddd;
-padding:14px;
-border-radius:8px;
-margin-bottom:18px;
-">
-
-<label style="display:flex;gap:10px;align-items:center;">
-
-<input type="checkbox"
-id="use-points-checkbox"
-onchange="applyRewardToPrice()">
-
-⭐ Punkte verwenden
-
-</label>
-
-<div style="margin-top:10px;font-size:.85rem;color:#666;">
-Aktive Belohnung:
-<span id="reward-status">
-Keine
-</span>
-</div>
-
-</div>
-
-<script>
-
-function applyRewardToPrice(){
-
-  if(!activeReward || !calculatedPrice) return;
-
-  let finalPrice = calculatedPrice.totalAll;
-
-  const safeDiscount =
-  calculateSafeDiscount(finalPrice);
-
-  if(activeReward.reward === '10'){
-
-    const discount =
-    Math.min(finalPrice * 0.10, safeDiscount);
-
-    finalPrice -= discount;
-  }
-
-  if(activeReward.reward === '25'){
-
-    const discount =
-    Math.min(finalPrice * 0.25, safeDiscount);
-
-    finalPrice -= discount;
-  }
-
-  if(
-    activeReward.reward === 'free-small'
-    &&
-    calculatedPrice.weight < 10
-  ){
-
-    finalPrice =
-    Math.max(
-      calculatedPrice.filCost,
-      0
-    );
-  }
-
-  document.getElementById(
-    'stl-price-amount'
-  ).innerText =
-  finalPrice.toFixed(2).replace('.',',') + ' €';
-}
-
-</script>
-
-<!-- =========================
-8. ADMIN DASHBOARD
-========================= -->
-
-<div id="admin-panel"
-style="display:none;">
-
-<div class="card">
-
-<h2>🔑 Admin Dashboard</h2>
-
-<div style="
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
-gap:16px;
-margin-top:20px;
-">
-
-<div class="card">
-<h3>Offene Aufträge</h3>
-<div id="admin-open-count">0</div>
-</div>
-
-<div class="card">
-<h3>Gedruckt heute</h3>
-<div id="admin-printed-today">0</div>
-</div>
-
-<div class="card">
-<h3>Filamentverbrauch</h3>
-<div id="admin-filament">0g</div>
-</div>
-
-</div>
-
-<div style="margin-top:24px;">
-
-<h3>Aufträge verwalten</h3>
-
-<div id="admin-orders-list"></div>
-
-</div>
-
-</div>
-
-</div>
-
-<script>
-
-function openAdminLogin(){
-
-  const p = prompt("Admin Passwort:");
-
-  if(p === "egn"){
-
-    isAdmin = true;
-
-    document.getElementById(
-      'admin-panel'
-    ).style.display = 'block';
-
-    renderAdminOrders();
-
-    showToast("Admin Modus aktiviert.");
-  }
-}
-
-function renderAdminOrders(){
-
-  const orders = getOrders();
-
-  const wrap =
-  document.getElementById(
-    'admin-orders-list'
-  );
-
-  wrap.innerHTML = orders.map(o=>`
-
-<div style="
-border:1px solid #ddd;
-padding:12px;
-border-radius:8px;
-margin-bottom:12px;
-">
-
-<div style="
-display:flex;
-justify-content:space-between;
-margin-bottom:10px;
-">
-
-<b>${o.id}</b>
-
-<select onchange="updateOrderStatus('${o.id}',this.value)">
-
-<option>Eingegangen</option>
-<option>In Bearbeitung</option>
-<option>Gedruckt</option>
-<option>Fertig</option>
-<option>Abgeholt</option>
-
-</select>
-
-</div>
-
-<div>${o.desc}</div>
-
-</div>
-
-`).join('');
-}
-
-function updateOrderStatus(id,status){
-
-  const orders = getOrders();
-
-  const order = orders.find(o=>o.id===id);
-
-  if(order){
-
-    order.status = status;
-
-    saveOrders(orders);
-
-    showToast("Status aktualisiert.");
-  }
-}
-
-</script>
-
-<!-- =========================
-9. VERBESSERTE DATENSTRUKTUR
-========================= -->
-
-<script>
-
-const orderObject = {
-
-  id: 'O-2041',
-
-  type: 'print',
-
-  user: {
-    name: '',
-    class: '',
-    email: ''
-  },
-
-  material: '',
-
-  color: '',
-
-  infill: 20,
-
-  weight: 0,
-
-  price: 0,
-
-  status: 'Eingegangen',
-
-  notes: '',
-
-  createdAt: Date.now()
-};
-
-</script>
-
-<!-- =========================
-10. ERWEITERTE NAVIGATION
-========================= -->
-
-<script>
-
-function switchMainTab(tab){
-
-  document.getElementById(
-    'section-order'
-  ).style.display =
-  tab === 'order' ? 'block':'none';
-
-  document.getElementById(
-    'section-db'
-  ).style.display =
-  tab === 'db' ? 'block':'none';
-
-  document.getElementById(
-    'section-upload'
-  ).style.display =
-  tab === 'upload' ? 'block':'none';
-}
 
 </script>
