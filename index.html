@@ -1,420 +1,1356 @@
-<!-- =========================
-PROFESSIONELLER LOGIN SCREEN
-========================= -->
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kreativlabor EGN</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 
-#login-screen{
-  position:fixed;
-  inset:0;
-  background:
-  linear-gradient(
-    135deg,
-    #f5f7fa 0%,
-    #eef2f7 100%
-  );
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:99999;
-
-  font-family:'DM Sans',sans-serif;
+:root{
+--bg:#f3f4f6;
+--card:#ffffff;
+--border:#e5e7eb;
+--text:#111827;
+--muted:#6b7280;
+--accent:#2563eb;
+--accent2:#1d4ed8;
+--success:#16a34a;
+--danger:#dc2626;
 }
 
-.login-wrapper{
-  width:100%;
-  max-width:520px;
-  padding:40px;
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:'DM Sans',sans-serif;
+background:var(--bg);
+color:var(--text);
+}
+
+/* LOGIN */
+
+#login-screen{
+position:fixed;
+inset:0;
+background:linear-gradient(135deg,#eff6ff,#f8fafc);
+display:flex;
+align-items:center;
+justify-content:center;
+z-index:9999;
 }
 
 .login-card{
-
-  background:white;
-
-  border:1px solid #e5e7eb;
-
-  border-radius:24px;
-
-  padding:42px;
-
-  box-shadow:
-  0 10px 30px rgba(0,0,0,0.06);
-
+width:100%;
+max-width:540px;
+background:white;
+padding:42px;
+border-radius:28px;
+border:1px solid var(--border);
+box-shadow:0 15px 40px rgba(0,0,0,.08);
 }
 
-.login-logo{
-
-  width:70px;
-  height:70px;
-
-  border-radius:18px;
-
-  background:
-  linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-  );
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  color:white;
-
-  font-size:1.8rem;
-  font-weight:700;
-
-  margin-bottom:26px;
+.logo{
+width:78px;
+height:78px;
+border-radius:20px;
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+display:flex;
+align-items:center;
+justify-content:center;
+color:white;
+font-size:1.8rem;
+font-weight:700;
+margin-bottom:24px;
 }
 
-.login-title{
-
-  font-size:2rem;
-  font-weight:700;
-
-  letter-spacing:-0.04em;
-
-  color:#111827;
-
-  margin-bottom:10px;
+.title{
+font-size:2rem;
+font-weight:700;
+margin-bottom:10px;
 }
 
-.login-subtitle{
-
-  color:#6b7280;
-
-  line-height:1.6;
-
-  margin-bottom:34px;
-
-  font-size:1rem;
+.subtitle{
+color:var(--muted);
+line-height:1.6;
+margin-bottom:30px;
 }
 
-.login-form-group{
-  margin-bottom:20px;
+.input-group{
+margin-bottom:18px;
 }
 
-.login-form-group label{
-
-  display:block;
-
-  margin-bottom:8px;
-
-  font-size:.9rem;
-
-  font-weight:600;
-
-  color:#111827;
+.input-group label{
+display:block;
+margin-bottom:8px;
+font-size:.92rem;
+font-weight:600;
 }
 
-.login-input{
-
-  width:100%;
-
-  height:56px;
-
-  border:1px solid #d1d5db;
-
-  border-radius:14px;
-
-  padding:0 18px;
-
-  font-size:1rem;
-
-  background:#f9fafb;
-
-  transition:all .18s ease;
+.input{
+width:100%;
+height:58px;
+padding:0 18px;
+border-radius:16px;
+border:1px solid #d1d5db;
+background:#f9fafb;
+font-size:1rem;
+transition:.2s;
 }
 
-.login-input:focus{
-
-  outline:none;
-
-  border-color:#2563eb;
-
-  background:white;
-
-  box-shadow:
-  0 0 0 4px rgba(37,99,235,.12);
+.input:focus{
+outline:none;
+border-color:var(--accent);
+background:white;
+box-shadow:0 0 0 4px rgba(37,99,235,.1);
 }
 
-.login-btn{
-
-  width:100%;
-
-  height:58px;
-
-  border:none;
-
-  border-radius:16px;
-
-  background:
-  linear-gradient(
-    135deg,
-    #2563eb,
-    #1d4ed8
-  );
-
-  color:white;
-
-  font-size:1rem;
-
-  font-weight:700;
-
-  cursor:pointer;
-
-  transition:all .18s ease;
-
-  margin-top:10px;
+.btn{
+height:58px;
+border:none;
+border-radius:16px;
+padding:0 22px;
+background:linear-gradient(135deg,var(--accent),var(--accent2));
+color:white;
+font-weight:700;
+font-size:1rem;
+cursor:pointer;
+transition:.2s;
 }
 
-.login-btn:hover{
-
-  transform:translateY(-1px);
-
-  box-shadow:
-  0 10px 24px rgba(37,99,235,.22);
+.btn:hover{
+transform:translateY(-1px);
 }
 
-.login-error{
-
-  display:none;
-
-  margin-top:18px;
-
-  background:#fef2f2;
-
-  border:1px solid #fecaca;
-
-  color:#b91c1c;
-
-  padding:14px;
-
-  border-radius:12px;
-
-  font-size:.9rem;
+.btn-full{
+width:100%;
 }
 
-.login-footer{
+#error{
+display:none;
+margin-top:14px;
+padding:14px;
+border-radius:14px;
+background:#fef2f2;
+border:1px solid #fecaca;
+color:#b91c1c;
+}
 
-  margin-top:26px;
+/* MAIN */
 
-  text-align:center;
+#main-site{
+display:none;
+}
 
-  color:#9ca3af;
+header{
+height:78px;
+background:white;
+border-bottom:1px solid var(--border);
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 30px;
+position:sticky;
+top:0;
+z-index:100;
+}
 
-  font-size:.82rem;
+.header-left{
+display:flex;
+align-items:center;
+gap:16px;
+}
+
+.badge{
+background:#eff6ff;
+color:var(--accent);
+padding:6px 12px;
+border-radius:999px;
+font-size:.75rem;
+font-weight:700;
+}
+
+.tabs{
+display:flex;
+gap:10px;
+}
+
+.tab{
+height:44px;
+padding:0 18px;
+border:none;
+border-radius:12px;
+background:#f3f4f6;
+cursor:pointer;
+font-weight:600;
+}
+
+.tab.active{
+background:var(--accent);
+color:white;
+}
+
+.container{
+max-width:1250px;
+margin:auto;
+padding:30px;
+}
+
+.card{
+background:white;
+border:1px solid var(--border);
+border-radius:24px;
+padding:28px;
+margin-bottom:24px;
+}
+
+.card-title{
+font-size:1.25rem;
+font-weight:700;
+margin-bottom:24px;
+}
+
+.grid-2{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:18px;
+}
+
+textarea.input{
+height:130px;
+padding:16px;
+resize:none;
+}
+
+.dropzone{
+height:170px;
+border:2px dashed #cbd5e1;
+border-radius:20px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#f8fafc;
+cursor:pointer;
+font-weight:600;
+color:var(--muted);
+transition:.2s;
+}
+
+.dropzone:hover{
+border-color:var(--accent);
+background:#eff6ff;
+}
+
+.price-box{
+padding:20px;
+border-radius:18px;
+background:#eff6ff;
+border:1px solid #bfdbfe;
+margin-top:20px;
+}
+
+.price{
+font-size:2rem;
+font-weight:700;
+color:var(--accent);
+}
+
+.points-box{
+margin-top:18px;
+padding:18px;
+border-radius:18px;
+background:#f8fafc;
+border:1px solid var(--border);
+}
+
+.order{
+padding:18px;
+border-radius:18px;
+background:#f9fafb;
+border:1px solid var(--border);
+margin-bottom:14px;
+}
+
+.shop-item{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:18px;
+border-radius:18px;
+border:1px solid var(--border);
+margin-bottom:14px;
+background:#fafafa;
+}
+
+.admin-order{
+padding:18px;
+border-radius:18px;
+border:1px solid var(--border);
+margin-bottom:14px;
+background:#fafafa;
+}
+
+.success{
+color:var(--success);
+font-weight:700;
+margin-top:14px;
+}
+
+@media(max-width:900px){
+
+.grid-2{
+grid-template-columns:1fr;
+}
+
+header{
+flex-direction:column;
+height:auto;
+padding:18px;
+gap:16px;
+}
+
+.tabs{
+flex-wrap:wrap;
+justify-content:center;
+}
 }
 
 </style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
 
 <div id="login-screen">
 
-  <div class="login-wrapper">
+<div class="login-card">
 
-    <div class="login-card">
+<div class="logo">
+EGN
+</div>
 
-      <div class="login-logo">
-        EGN
-      </div>
+<div class="title">
+Kreativlabor Portal
+</div>
 
-      <div class="login-title">
-        Kreativlabor Portal
-      </div>
+<div class="subtitle">
+3D-Druck · Reparaturen · Modell-Datenbank · Makerspace Verwaltung
+</div>
 
-      <div class="login-subtitle">
-        Melde dich an, um Druckaufträge,
-        Modell-Uploads und Reparaturanfragen
-        verwalten zu können.
-      </div>
+<div class="input-group">
+<label>Name</label>
+<input type="text" id="login-name" class="input" placeholder="Max Mustermann">
+</div>
 
-      <div class="login-form-group">
-        <label>Vor- und Nachname</label>
+<div class="input-group">
+<label>Klasse / Kurs</label>
+<input type="text" id="login-class" class="input" placeholder="z.B. 10A">
+</div>
 
-        <input
-        type="text"
-        id="login-name"
-        class="login-input"
-        placeholder="Max Mustermann">
-      </div>
+<div class="input-group">
+<label>E-Mail-Adresse</label>
+<input type="email" id="login-email" class="input" placeholder="deine@email.de">
+</div>
 
-      <div class="login-form-group">
-        <label>Klasse / Kurs</label>
+<button class="btn btn-full" onclick="loginUser()">
+Weiter zum Portal
+</button>
 
-        <input
-        type="text"
-        id="login-class"
-        class="login-input"
-        placeholder="z.B. 10A">
-      </div>
+<div id="error"></div>
 
-      <div class="login-form-group">
-        <label>E-Mail-Adresse</label>
+</div>
+</div>
 
-        <input
-        type="email"
-        id="login-email"
-        class="login-input"
-        placeholder="deine@email.de">
-      </div>
+<!-- WEBSITE -->
 
-      <button
-      class="login-btn"
-      onclick="loginUser()">
+<div id="main-site">
 
-        Weiter zum Portal
+<header>
 
-      </button>
+<div class="header-left">
 
-      <div
-      id="login-error"
-      class="login-error">
-      </div>
+<div style="font-size:1.4rem;font-weight:700;">
+Kreativlabor EGN
+</div>
 
-      <div class="login-footer">
-        Kreativlabor EGN · Professional Edition
-      </div>
+<div class="badge">
+Professional Edition
+</div>
 
-    </div>
+</div>
 
-  </div>
+<div class="tabs">
 
+<button class="tab active" onclick="switchTab('orders')">
+Aufträge
+</button>
+
+<button class="tab" onclick="switchTab('models')">
+Modell-Datenbank
+</button>
+
+<button class="tab" onclick="switchTab('upload')">
+Modell Upload
+</button>
+
+<button class="tab" onclick="switchTab('shop')">
+Punkte-Shop
+</button>
+
+<button class="tab" onclick="adminLogin()">
+Admin
+</button>
+
+</div>
+
+</header>
+
+<div class="container">
+
+<!-- AUFTRÄGE -->
+
+<div id="orders-section">
+
+<div class="card">
+
+<div class="card-title">
+💡 Idee / Reparatur / Build Anfrage
+</div>
+
+<div class="grid-2">
+
+<div class="input-group">
+<label>Name</label>
+<input id="idea-name" class="input">
+</div>
+
+<div class="input-group">
+<label>Klasse</label>
+<input id="idea-class" class="input">
+</div>
+
+</div>
+
+<div class="input-group">
+<label>E-Mail</label>
+<input id="idea-email" class="input">
+</div>
+
+<div class="input-group">
+<label>Projektbeschreibung</label>
+<textarea id="idea-desc" class="input"></textarea>
+</div>
+
+<div class="input-group">
+
+<label>Build / Skizze / Reparaturbild</label>
+
+<div class="dropzone"
+onclick="document.getElementById('idea-file').click()">
+
+<input type="file"
+id="idea-file"
+accept=".png,.jpg,.jpeg,.pdf"
+style="display:none;"
+onchange="showIdeaFile(this.files[0])">
+
+<div id="idea-file-text">
+Datei hochladen
+</div>
+
+</div>
+
+</div>
+
+<button class="btn" onclick="submitIdea()">
+Anfrage senden
+</button>
+
+<div class="success" id="idea-success" style="display:none;">
+Anfrage erfolgreich übermittelt.
+</div>
+
+</div>
+
+<!-- STL -->
+
+<div class="card">
+
+<div class="card-title">
+🖨 STL Druckauftrag
+</div>
+
+<div class="grid-2">
+
+<div>
+
+<div class="input-group">
+<label>Name</label>
+<input id="stl-name" class="input">
+</div>
+
+<div class="input-group">
+<label>Klasse</label>
+<input id="stl-class" class="input">
+</div>
+
+<div class="input-group">
+<label>E-Mail</label>
+<input id="stl-email" class="input">
+</div>
+
+</div>
+
+<div>
+
+<div class="input-group">
+<label>Material</label>
+
+<select id="material" class="input" onchange="calculatePrice()">
+
+<option>PLA</option>
+<option>PETG</option>
+<option>ABS</option>
+<option>TPU</option>
+
+</select>
+</div>
+
+<div class="input-group">
+<label>Stückzahl</label>
+
+<input
+type="number"
+id="count"
+class="input"
+value="1"
+min="1"
+onchange="calculatePrice()">
+</div>
+
+</div>
+
+</div>
+
+<div class="input-group">
+
+<label>STL Datei</label>
+
+<div class="dropzone"
+onclick="document.getElementById('stl-file').click()">
+
+<input type="file"
+id="stl-file"
+accept=".stl"
+style="display:none;"
+onchange="handleStl(this.files[0])">
+
+<div id="stl-text">
+STL hochladen
+</div>
+
+</div>
+
+</div>
+
+<div class="price-box">
+
+<div style="font-size:.8rem;font-weight:700;margin-bottom:6px;">
+PREISSCHÄTZUNG
+</div>
+
+<div class="price" id="price">
+0,00 €
+</div>
+
+<div style="margin-top:8px;color:var(--muted);" id="weight">
+0g
+</div>
+
+</div>
+
+<div class="points-box">
+
+<div style="font-weight:700;margin-bottom:14px;">
+⭐ Punkte verwenden
+</div>
+
+<div style="margin-bottom:10px;">
+Verfügbare Punkte:
+<span id="points">
+0
+</span>
+</div>
+
+<select id="reward" class="input">
+
+<option value="none">
+Keine Belohnung
+</option>
+
+<option value="10">
+10% Rabatt
+</option>
+
+<option value="25">
+25% Rabatt
+</option>
+
+<option value="free">
+Gratis Kleinteil (&lt;10g)
+</option>
+
+</select>
+
+</div>
+
+<button class="btn"
+style="margin-top:20px;"
+onclick="submitStl()">
+
+STL Auftrag absenden
+
+</button>
+
+<div class="success"
+id="stl-success"
+style="display:none;">
+
+Druckauftrag erfolgreich eingereicht.
+
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="card-title">
+📦 Deine Aufträge
+</div>
+
+<div id="orders-list"></div>
+
+</div>
+
+</div>
+
+<!-- MODEL DB -->
+
+<div id="models-section" style="display:none;">
+
+<div class="card">
+
+<div class="card-title">
+📚 Modell Datenbank
+</div>
+
+<div id="models-list"></div>
+
+</div>
+
+</div>
+
+<!-- MODEL UPLOAD -->
+
+<div id="upload-section" style="display:none;">
+
+<div class="card">
+
+<div class="card-title">
+⬆ Eigenes Modell hochladen
+</div>
+
+<div class="input-group">
+<label>Modellname</label>
+<input class="input" id="model-title">
+</div>
+
+<div class="input-group">
+<label>Beschreibung</label>
+<textarea class="input" id="model-desc"></textarea>
+</div>
+
+<div class="input-group">
+
+<label>STL Datei</label>
+
+<div class="dropzone"
+onclick="document.getElementById('model-file').click()">
+
+<input
+type="file"
+id="model-file"
+accept=".stl"
+style="display:none;">
+
+Modell hochladen
+
+</div>
+
+</div>
+
+<button class="btn" onclick="uploadModel()">
+Modell veröffentlichen
+</button>
+
+</div>
+
+</div>
+
+<!-- SHOP -->
+
+<div id="shop-section" style="display:none;">
+
+<div class="card">
+
+<div class="card-title">
+⭐ Punkte Shop
+</div>
+
+<div class="shop-item">
+
+<div>
+<div style="font-weight:700;">
+10% Rabatt
+</div>
+
+<div style="color:var(--muted);">
+50 Punkte
+</div>
+</div>
+
+<button class="btn" onclick="buyReward(50)">
+Einlösen
+</button>
+
+</div>
+
+<div class="shop-item">
+
+<div>
+<div style="font-weight:700;">
+25% Rabatt
+</div>
+
+<div style="color:var(--muted);">
+120 Punkte
+</div>
+</div>
+
+<button class="btn" onclick="buyReward(120)">
+Einlösen
+</button>
+
+</div>
+
+<div class="shop-item">
+
+<div>
+<div style="font-weight:700;">
+Gratis Kleinteil
+</div>
+
+<div style="color:var(--muted);">
+250 Punkte
+</div>
+</div>
+
+<button class="btn" onclick="buyReward(250)">
+Einlösen
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- ADMIN -->
+
+<div id="admin-section" style="display:none;">
+
+<div class="card">
+
+<div class="card-title">
+🔑 Admin Dashboard
+</div>
+
+<div id="admin-orders"></div>
+
+</div>
+
+</div>
+
+</div>
 </div>
 
 <script>
 
-const USER_KEY = "egn_current_user";
+const USER_KEY = "egn_user";
+const ORDER_KEY = "egn_orders";
+const MODEL_KEY = "egn_models";
+const POINT_KEY = "egn_points";
+
+let currentWeight = 0;
+let currentPrice = 0;
 
 function loginUser(){
 
-  const name =
-  document.getElementById(
-    'login-name'
-  ).value.trim();
+const name =
+document.getElementById('login-name').value.trim();
 
-  const clazz =
-  document.getElementById(
-    'login-class'
-  ).value.trim();
+const clazz =
+document.getElementById('login-class').value.trim();
 
-  const email =
-  document.getElementById(
-    'login-email'
-  ).value.trim();
+const email =
+document.getElementById('login-email').value.trim();
 
-  const err =
-  document.getElementById(
-    'login-error'
-  );
+const err =
+document.getElementById('error');
 
-  err.style.display = 'none';
+err.style.display='none';
 
-  if(!name || !clazz || !email){
+if(!name || !clazz || !email){
 
-    err.innerText =
-    "Bitte alle Felder ausfüllen.";
-
-    err.style.display = 'block';
-
-    return;
-  }
-
-  if(!email.includes('@')){
-
-    err.innerText =
-    "Bitte gib eine gültige E-Mail-Adresse ein.";
-
-    err.style.display = 'block';
-
-    return;
-  }
-
-  localStorage.setItem(
-    USER_KEY,
-
-    JSON.stringify({
-
-      name,
-      class: clazz,
-      email
-
-    })
-  );
-
-  document.getElementById(
-    'login-screen'
-  ).style.display = 'none';
-
-  autofillUserData();
-
-  showToast("Erfolgreich angemeldet.");
+err.style.display='block';
+err.innerText='Bitte alle Felder ausfüllen.';
+return;
 }
 
-function autofillUserData(){
+if(!email.includes('@')){
 
-  const user =
-  JSON.parse(
-    localStorage.getItem(USER_KEY)
-  );
-
-  if(!user) return;
-
-  [
-    'idea-name',
-    'stl-name'
-  ].forEach(id=>{
-
-    if(document.getElementById(id)){
-
-      document.getElementById(id).value =
-      user.name;
-    }
-  });
-
-  [
-    'idea-class',
-    'stl-class'
-  ].forEach(id=>{
-
-    if(document.getElementById(id)){
-
-      document.getElementById(id).value =
-      user.class;
-    }
-  });
-
-  [
-    'idea-email',
-    'stl-email'
-  ].forEach(id=>{
-
-    if(document.getElementById(id)){
-
-      document.getElementById(id).value =
-      user.email;
-    }
-  });
+err.style.display='block';
+err.innerText='Bitte gültige E-Mail eingeben.';
+return;
 }
 
-window.onload = ()=>{
+localStorage.setItem(USER_KEY,JSON.stringify({
+name,
+class:clazz,
+email
+}));
 
-  const user =
-  localStorage.getItem(USER_KEY);
+document.getElementById('login-screen').style.display='none';
+document.getElementById('main-site').style.display='block';
 
-  if(user){
+autofill();
+renderOrders();
+renderModels();
+updatePoints();
+}
 
-    document.getElementById(
-      'login-screen'
-    ).style.display = 'none';
+function autofill(){
 
-    autofillUserData();
-  }
+const u =
+JSON.parse(localStorage.getItem(USER_KEY));
 
-  renderOrders();
-  renderDB();
-  updatePointsDisplay();
-};
+if(!u) return;
+
+[
+'idea-name',
+'stl-name'
+].forEach(id=>{
+document.getElementById(id).value=u.name;
+});
+
+[
+'idea-class',
+'stl-class'
+].forEach(id=>{
+document.getElementById(id).value=u.class;
+});
+
+[
+'idea-email',
+'stl-email'
+].forEach(id=>{
+document.getElementById(id).value=u.email;
+});
+}
+
+function switchTab(tab){
+
+document.getElementById('orders-section').style.display='none';
+document.getElementById('models-section').style.display='none';
+document.getElementById('upload-section').style.display='none';
+document.getElementById('shop-section').style.display='none';
+
+if(tab==='orders'){
+document.getElementById('orders-section').style.display='block';
+}
+
+if(tab==='models'){
+document.getElementById('models-section').style.display='block';
+}
+
+if(tab==='upload'){
+document.getElementById('upload-section').style.display='block';
+}
+
+if(tab==='shop'){
+document.getElementById('shop-section').style.display='block';
+}
+}
+
+function showIdeaFile(file){
+
+if(!file) return;
+
+document.getElementById(
+'idea-file-text'
+).innerText=file.name;
+}
+
+function handleStl(file){
+
+if(!file) return;
+
+document.getElementById(
+'stl-text'
+).innerText=file.name;
+
+calculatePrice();
+}
+
+function calculatePrice(){
+
+const count =
+parseInt(
+document.getElementById('count').value
+) || 1;
+
+currentWeight =
+Math.floor(Math.random()*80)+5;
+
+const base =
+(currentWeight*0.08)+2;
+
+let total =
+base*count;
+
+const reward =
+document.getElementById('reward').value;
+
+const materialCost =
+currentWeight*0.03;
+
+if(reward==='10'){
+
+const disc =
+Math.min(total*0.1,total-materialCost);
+
+total -= disc;
+}
+
+if(reward==='25'){
+
+const disc =
+Math.min(total*0.25,total-materialCost);
+
+total -= disc;
+}
+
+if(
+reward==='free'
+&&
+currentWeight<10
+){
+
+total =
+Math.max(materialCost,0.5);
+}
+
+currentPrice=total;
+
+document.getElementById(
+'price'
+).innerText=
+total.toFixed(2).replace('.',',')+' €';
+
+document.getElementById(
+'weight'
+).innerText=
+currentWeight+'g geschätzt';
+}
+
+function submitIdea(){
+
+const orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
+
+orders.unshift({
+
+id:'O-'+Date.now(),
+
+type:'Idee',
+
+status:'Eingegangen',
+
+desc:
+document.getElementById('idea-desc').value
+
+});
+
+localStorage.setItem(
+ORDER_KEY,
+JSON.stringify(orders)
+);
+
+document.getElementById(
+'idea-success'
+).style.display='block';
+
+renderOrders();
+}
+
+function submitStl(){
+
+const orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
+
+orders.unshift({
+
+id:'O-'+Date.now(),
+
+type:'STL',
+
+status:'Eingegangen',
+
+weight:currentWeight,
+
+price:currentPrice
+
+});
+
+localStorage.setItem(
+ORDER_KEY,
+JSON.stringify(orders)
+);
+
+addPoints(
+Math.min(currentWeight,80)
+);
+
+document.getElementById(
+'stl-success'
+).style.display='block';
+
+renderOrders();
+
+updatePoints();
+}
+
+function renderOrders(){
+
+const orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
+
+const list =
+document.getElementById('orders-list');
+
+if(orders.length===0){
+
+list.innerHTML='Keine Aufträge.';
+return;
+}
+
+list.innerHTML =
+orders.map(o=>`
+
+<div class="order">
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+">
+
+<div style="font-weight:700;">
+${o.type}
+</div>
+
+<div>
+${o.status}
+</div>
+
+</div>
+
+<div>
+${o.desc || ''}
+</div>
+
+<div style="
+margin-top:10px;
+font-weight:700;
+color:var(--accent);
+">
+
+${o.price ? o.price.toFixed(2)+' €' : ''}
+
+</div>
+
+</div>
+
+`).join('');
+}
+
+function uploadModel(){
+
+const title =
+document.getElementById(
+'model-title'
+).value;
+
+const desc =
+document.getElementById(
+'model-desc'
+).value;
+
+const models =
+JSON.parse(
+localStorage.getItem(MODEL_KEY)
+|| '[]'
+);
+
+models.unshift({
+title,
+desc
+});
+
+localStorage.setItem(
+MODEL_KEY,
+JSON.stringify(models)
+);
+
+addPoints(40);
+
+renderModels();
+
+alert('Modell veröffentlicht.');
+}
+
+function renderModels(){
+
+const models =
+JSON.parse(
+localStorage.getItem(MODEL_KEY)
+|| '[]'
+);
+
+const list =
+document.getElementById(
+'models-list'
+);
+
+if(models.length===0){
+
+list.innerHTML='Noch keine Modelle.';
+return;
+}
+
+list.innerHTML =
+models.map(m=>`
+
+<div class="order">
+
+<div style="
+font-weight:700;
+margin-bottom:10px;
+">
+
+${m.title}
+
+</div>
+
+<div style="
+color:var(--muted);
+margin-bottom:14px;
+">
+
+${m.desc}
+
+</div>
+
+<button class="btn">
+Download
+</button>
+
+</div>
+
+`).join('');
+}
+
+function addPoints(n){
+
+const p =
+parseInt(
+localStorage.getItem(POINT_KEY)
+|| '0'
+)+n;
+
+localStorage.setItem(
+POINT_KEY,
+p
+);
+}
+
+function updatePoints(){
+
+document.getElementById(
+'points'
+).innerText=
+localStorage.getItem(POINT_KEY)
+|| 0;
+}
+
+function buyReward(cost){
+
+const p =
+parseInt(
+localStorage.getItem(POINT_KEY)
+|| '0'
+);
+
+if(p<cost){
+
+alert('Nicht genug Punkte.');
+return;
+}
+
+alert(
+'Belohnung aktiviert.'
+);
+}
+
+function adminLogin(){
+
+const pw =
+prompt('Admin Passwort');
+
+if(pw!=='egn') return;
+
+document.getElementById(
+'admin-section'
+).style.display='block';
+
+renderAdmin();
+}
+
+function renderAdmin(){
+
+const orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
+
+document.getElementById(
+'admin-orders'
+).innerHTML=
+
+orders.map(o=>`
+
+<div class="admin-order">
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:12px;
+">
+
+<div style="font-weight:700;">
+${o.type}
+</div>
+
+<select onchange="
+changeStatus(
+'${o.id}',
+this.value
+)
+">
+
+<option>Eingegangen</option>
+<option>In Bearbeitung</option>
+<option>Gedruckt</option>
+<option>Fertig</option>
+<option>Abgeholt</option>
+
+</select>
+
+</div>
+
+<div>
+${o.desc || ''}
+</div>
+
+</div>
+
+`).join('');
+}
+
+function changeStatus(id,status){
+
+const orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
+
+const o =
+orders.find(x=>x.id===id);
+
+if(o){
+
+o.status=status;
+
+localStorage.setItem(
+ORDER_KEY,
+JSON.stringify(orders)
+);
+
+renderOrders();
+}
+}
+
+window.onload=()=>{
+
+const u =
+localStorage.getItem(USER_KEY);
+
+if(u){
+
+document.getElementById(
+'login-screen'
+).style.display='none';
+
+document.getElementById(
+'main-site'
+).style.display='block';
+
+autofill();
+renderOrders();
+renderModels();
+updatePoints();
+}
+}
 
 </script>
+
+</body>
+</html>
