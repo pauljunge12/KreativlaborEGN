@@ -1,1017 +1,347 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- =========================================================
+ADMIN SYSTEM + AUFTRAGSVERWALTUNG + PUNKTECENTER
+DIESE TEILE ZUSÄTZLICH IN DEINEN CODE EINFÜGEN
+========================================================= -->
 
-<title>Kreativlabor EGN</title>
+<!-- =========================
+1. HEADER ERWEITERN
+========================= -->
 
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- DIREKT IN DEINE TABS EINFÜGEN -->
 
-<style>
+<button class="tab" id="admin-orders-tab"
+onclick="switchTab('admin-orders')"
+style="display:none;">
 
-:root{
---bg:#f3f4f6;
---card:#ffffff;
---border:#e5e7eb;
---text:#111827;
---muted:#6b7280;
---accent:#2563eb;
---accent2:#1d4ed8;
---success:#16a34a;
---danger:#dc2626;
-}
+Admin Aufträge
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-}
+</button>
 
-body{
-font-family:'DM Sans',sans-serif;
-background:var(--bg);
-color:var(--text);
-}
+<button class="tab"
+onclick="switchTab('points')">
 
-/* LOGIN */
+Punktecenter
 
-#login-screen{
-position:fixed;
-inset:0;
-background:linear-gradient(135deg,#eff6ff,#f8fafc);
-display:flex;
-align-items:center;
-justify-content:center;
-z-index:9999;
-}
+</button>
 
-.login-card{
-width:100%;
-max-width:540px;
-background:white;
-padding:42px;
-border-radius:28px;
-border:1px solid var(--border);
-box-shadow:0 15px 40px rgba(0,0,0,.08);
-}
+<!-- =========================
+2. PUNKTECENTER
+========================= -->
 
-.logo{
-width:78px;
-height:78px;
-border-radius:20px;
-background:linear-gradient(135deg,var(--accent),var(--accent2));
-display:flex;
-align-items:center;
-justify-content:center;
-color:white;
-font-size:1.8rem;
-font-weight:700;
-margin-bottom:24px;
-}
+<div id="points-section" style="display:none;">
 
-.title{
-font-size:2rem;
-font-weight:700;
-margin-bottom:10px;
-}
+<div class="card">
 
-.subtitle{
-color:var(--muted);
-line-height:1.6;
-margin-bottom:30px;
-}
+<div class="card-title">
+⭐ Punktecenter
+</div>
 
-.input-group{
-margin-bottom:18px;
-}
-
-.input-group label{
-display:block;
-margin-bottom:8px;
-font-size:.92rem;
-font-weight:600;
-}
-
-.input{
-width:100%;
-height:58px;
-padding:0 18px;
-border-radius:16px;
-border:1px solid #d1d5db;
-background:#f9fafb;
-font-size:1rem;
-transition:.2s;
-}
-
-.input:focus{
-outline:none;
-border-color:var(--accent);
-background:white;
-box-shadow:0 0 0 4px rgba(37,99,235,.1);
-}
-
-.btn{
-height:58px;
-border:none;
-border-radius:16px;
-padding:0 22px;
-background:linear-gradient(135deg,var(--accent),var(--accent2));
-color:white;
-font-weight:700;
-font-size:1rem;
-cursor:pointer;
-transition:.2s;
-}
-
-.btn:hover{
-transform:translateY(-1px);
-}
-
-.btn-full{
-width:100%;
-}
-
-#error{
-display:none;
-margin-top:14px;
-padding:14px;
-border-radius:14px;
-background:#fef2f2;
-border:1px solid #fecaca;
-color:#b91c1c;
-}
-
-/* MAIN */
-
-#main-site{
-display:none;
-}
-
-header{
-height:78px;
-background:white;
-border-bottom:1px solid var(--border);
-display:flex;
-align-items:center;
-justify-content:space-between;
-padding:0 30px;
-position:sticky;
-top:0;
-z-index:100;
-}
-
-.header-left{
-display:flex;
-align-items:center;
-gap:16px;
-}
-
-.badge{
-background:#eff6ff;
-color:var(--accent);
-padding:6px 12px;
-border-radius:999px;
-font-size:.75rem;
-font-weight:700;
-}
-
-.tabs{
-display:flex;
-gap:10px;
-}
-
-.tab{
-height:44px;
-padding:0 18px;
-border:none;
-border-radius:12px;
-background:#f3f4f6;
-cursor:pointer;
-font-weight:600;
-}
-
-.tab.active{
-background:var(--accent);
-color:white;
-}
-
-.container{
-max-width:1250px;
-margin:auto;
-padding:30px;
-}
-
-.card{
-background:white;
-border:1px solid var(--border);
-border-radius:24px;
-padding:28px;
-margin-bottom:24px;
-}
-
-.card-title{
-font-size:1.25rem;
-font-weight:700;
-margin-bottom:24px;
-}
-
-.grid-2{
+<div style="
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:18px;
-}
+">
 
-textarea.input{
-height:130px;
-padding:16px;
-resize:none;
-}
+<div style="
+padding:24px;
+border-radius:22px;
+background:linear-gradient(
+135deg,
+#2563eb,
+#1d4ed8
+);
+color:white;
+">
 
-.dropzone{
-height:170px;
-border:2px dashed #cbd5e1;
-border-radius:20px;
-display:flex;
-align-items:center;
-justify-content:center;
-background:#f8fafc;
-cursor:pointer;
-font-weight:600;
-color:var(--muted);
-transition:.2s;
-}
+<div style="
+font-size:.85rem;
+opacity:.8;
+margin-bottom:10px;
+">
 
-.dropzone:hover{
-border-color:var(--accent);
-background:#eff6ff;
-}
+DEIN PUNKTESTAND
 
-.price-box{
-padding:20px;
-border-radius:18px;
-background:#eff6ff;
-border:1px solid #bfdbfe;
-margin-top:20px;
-}
+</div>
 
-.price{
-font-size:2rem;
+<div id="big-points-display"
+style="
+font-size:3rem;
 font-weight:700;
-color:var(--accent);
-}
+">
 
-.points-box{
-margin-top:18px;
-padding:18px;
-border-radius:18px;
-background:#f8fafc;
-border:1px solid var(--border);
-}
+0
 
-.order{
-padding:18px;
-border-radius:18px;
+</div>
+
+</div>
+
+<div style="
+padding:24px;
+border-radius:22px;
 background:#f9fafb;
-border:1px solid var(--border);
-margin-bottom:14px;
-}
+border:1px solid #e5e7eb;
+">
 
-.shop-item{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:18px;
-border-radius:18px;
-border:1px solid var(--border);
-margin-bottom:14px;
-background:#fafafa;
-}
-
-.admin-order{
-padding:18px;
-border-radius:18px;
-border:1px solid var(--border);
-margin-bottom:14px;
-background:#fafafa;
-}
-
-.success{
-color:var(--success);
+<div style="
+font-size:1rem;
 font-weight:700;
-margin-top:14px;
-}
+margin-bottom:14px;
+">
 
-@media(max-width:900px){
+🎁 Belohnungen
 
-.grid-2{
-grid-template-columns:1fr;
-}
-
-header{
-flex-direction:column;
-height:auto;
-padding:18px;
-gap:16px;
-}
-
-.tabs{
-flex-wrap:wrap;
-justify-content:center;
-}
-}
-
-</style>
-</head>
-
-<body>
-
-<!-- LOGIN -->
-
-<div id="login-screen">
-
-<div class="login-card">
-
-<div class="logo">
-EGN
-</div>
-
-<div class="title">
-Kreativlabor Portal
-</div>
-
-<div class="subtitle">
-3D-Druck · Reparaturen · Modell-Datenbank · Makerspace Verwaltung
-</div>
-
-<div class="input-group">
-<label>Name</label>
-<input type="text" id="login-name" class="input" placeholder="Max Mustermann">
-</div>
-
-<div class="input-group">
-<label>Klasse / Kurs</label>
-<input type="text" id="login-class" class="input" placeholder="z.B. 10A">
-</div>
-
-<div class="input-group">
-<label>E-Mail-Adresse</label>
-<input type="email" id="login-email" class="input" placeholder="deine@email.de">
-</div>
-
-<button class="btn btn-full" onclick="loginUser()">
-Weiter zum Portal
-</button>
-
-<div id="error"></div>
-
-</div>
-</div>
-
-<!-- WEBSITE -->
-
-<div id="main-site">
-
-<header>
-
-<div class="header-left">
-
-<div style="font-size:1.4rem;font-weight:700;">
-Kreativlabor EGN
-</div>
-
-<div class="badge">
-Professional Edition
-</div>
-
-</div>
-
-<div class="tabs">
-
-<button class="tab active" onclick="switchTab('orders')">
-Aufträge
-</button>
-
-<button class="tab" onclick="switchTab('models')">
-Modell-Datenbank
-</button>
-
-<button class="tab" onclick="switchTab('upload')">
-Modell Upload
-</button>
-
-<button class="tab" onclick="switchTab('shop')">
-Punkte-Shop
-</button>
-
-<button class="tab" onclick="adminLogin()">
-Admin
-</button>
-
-</div>
-
-</header>
-
-<div class="container">
-
-<!-- AUFTRÄGE -->
-
-<div id="orders-section">
-
-<div class="card">
-
-<div class="card-title">
-💡 Idee / Reparatur / Build Anfrage
-</div>
-
-<div class="grid-2">
-
-<div class="input-group">
-<label>Name</label>
-<input id="idea-name" class="input">
-</div>
-
-<div class="input-group">
-<label>Klasse</label>
-<input id="idea-class" class="input">
-</div>
-
-</div>
-
-<div class="input-group">
-<label>E-Mail</label>
-<input id="idea-email" class="input">
-</div>
-
-<div class="input-group">
-<label>Projektbeschreibung</label>
-<textarea id="idea-desc" class="input"></textarea>
-</div>
-
-<div class="input-group">
-
-<label>Build / Skizze / Reparaturbild</label>
-
-<div class="dropzone"
-onclick="document.getElementById('idea-file').click()">
-
-<input type="file"
-id="idea-file"
-accept=".png,.jpg,.jpeg,.pdf"
-style="display:none;"
-onchange="showIdeaFile(this.files[0])">
-
-<div id="idea-file-text">
-Datei hochladen
-</div>
-
-</div>
-
-</div>
-
-<button class="btn" onclick="submitIdea()">
-Anfrage senden
-</button>
-
-<div class="success" id="idea-success" style="display:none;">
-Anfrage erfolgreich übermittelt.
-</div>
-
-</div>
-
-<!-- STL -->
-
-<div class="card">
-
-<div class="card-title">
-🖨 STL Druckauftrag
-</div>
-
-<div class="grid-2">
-
-<div>
-
-<div class="input-group">
-<label>Name</label>
-<input id="stl-name" class="input">
-</div>
-
-<div class="input-group">
-<label>Klasse</label>
-<input id="stl-class" class="input">
-</div>
-
-<div class="input-group">
-<label>E-Mail</label>
-<input id="stl-email" class="input">
-</div>
-
-</div>
-
-<div>
-
-<div class="input-group">
-<label>Material</label>
-
-<select id="material" class="input" onchange="calculatePrice()">
-
-<option>PLA</option>
-<option>PETG</option>
-<option>ABS</option>
-<option>TPU</option>
-
-</select>
-</div>
-
-<div class="input-group">
-<label>Stückzahl</label>
-
-<input
-type="number"
-id="count"
-class="input"
-value="1"
-min="1"
-onchange="calculatePrice()">
-</div>
-
-</div>
-
-</div>
-
-<div class="input-group">
-
-<label>STL Datei</label>
-
-<div class="dropzone"
-onclick="document.getElementById('stl-file').click()">
-
-<input type="file"
-id="stl-file"
-accept=".stl"
-style="display:none;"
-onchange="handleStl(this.files[0])">
-
-<div id="stl-text">
-STL hochladen
-</div>
-
-</div>
-
-</div>
-
-<div class="price-box">
-
-<div style="font-size:.8rem;font-weight:700;margin-bottom:6px;">
-PREISSCHÄTZUNG
-</div>
-
-<div class="price" id="price">
-0,00 €
-</div>
-
-<div style="margin-top:8px;color:var(--muted);" id="weight">
-0g
-</div>
-
-</div>
-
-<div class="points-box">
-
-<div style="font-weight:700;margin-bottom:14px;">
-⭐ Punkte verwenden
 </div>
 
 <div style="margin-bottom:10px;">
-Verfügbare Punkte:
-<span id="points">
+50 Punkte → 10% Rabatt
+</div>
+
+<div style="margin-bottom:10px;">
+120 Punkte → 25% Rabatt
+</div>
+
+<div style="margin-bottom:10px;">
+250 Punkte → Gratis Kleinteil
+</div>
+
+<div style="margin-bottom:10px;">
+400 Punkte → Prioritätsdruck
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- =========================
+3. ADMIN AUFTRÄGE
+========================= -->
+
+<div id="admin-orders-section"
+style="display:none;">
+
+<div class="card">
+
+<div class="card-title">
+🔑 Admin Auftragsverwaltung
+</div>
+
+<div style="
+display:grid;
+grid-template-columns:
+repeat(auto-fit,minmax(200px,1fr));
+gap:18px;
+margin-bottom:24px;
+">
+
+<div class="stat-box">
+
+<div class="stat-label">
+OFFENE AUFTRÄGE
+</div>
+
+<div class="stat-number"
+id="admin-open-count">
 0
-</span>
-</div>
-
-<select id="reward" class="input">
-
-<option value="none">
-Keine Belohnung
-</option>
-
-<option value="10">
-10% Rabatt
-</option>
-
-<option value="25">
-25% Rabatt
-</option>
-
-<option value="free">
-Gratis Kleinteil (&lt;10g)
-</option>
-
-</select>
-
-</div>
-
-<button class="btn"
-style="margin-top:20px;"
-onclick="submitStl()">
-
-STL Auftrag absenden
-
-</button>
-
-<div class="success"
-id="stl-success"
-style="display:none;">
-
-Druckauftrag erfolgreich eingereicht.
-
 </div>
 
 </div>
 
-<div class="card">
+<div class="stat-box">
 
-<div class="card-title">
-📦 Deine Aufträge
+<div class="stat-label">
+AM DRUCKEN
 </div>
 
-<div id="orders-list"></div>
-
-</div>
-
-</div>
-
-<!-- MODEL DB -->
-
-<div id="models-section" style="display:none;">
-
-<div class="card">
-
-<div class="card-title">
-📚 Modell Datenbank
-</div>
-
-<div id="models-list"></div>
-
+<div class="stat-number"
+id="admin-printing-count">
+0
 </div>
 
 </div>
 
-<!-- MODEL UPLOAD -->
+<div class="stat-box">
 
-<div id="upload-section" style="display:none;">
-
-<div class="card">
-
-<div class="card-title">
-⬆ Eigenes Modell hochladen
+<div class="stat-label">
+FERTIG
 </div>
 
-<div class="input-group">
-<label>Modellname</label>
-<input class="input" id="model-title">
-</div>
-
-<div class="input-group">
-<label>Beschreibung</label>
-<textarea class="input" id="model-desc"></textarea>
-</div>
-
-<div class="input-group">
-
-<label>STL Datei</label>
-
-<div class="dropzone"
-onclick="document.getElementById('model-file').click()">
-
-<input
-type="file"
-id="model-file"
-accept=".stl"
-style="display:none;">
-
-Modell hochladen
-
-</div>
-
-</div>
-
-<button class="btn" onclick="uploadModel()">
-Modell veröffentlichen
-</button>
-
-</div>
-
-</div>
-
-<!-- SHOP -->
-
-<div id="shop-section" style="display:none;">
-
-<div class="card">
-
-<div class="card-title">
-⭐ Punkte Shop
-</div>
-
-<div class="shop-item">
-
-<div>
-<div style="font-weight:700;">
-10% Rabatt
-</div>
-
-<div style="color:var(--muted);">
-50 Punkte
-</div>
-</div>
-
-<button class="btn" onclick="buyReward(50)">
-Einlösen
-</button>
-
-</div>
-
-<div class="shop-item">
-
-<div>
-<div style="font-weight:700;">
-25% Rabatt
-</div>
-
-<div style="color:var(--muted);">
-120 Punkte
-</div>
-</div>
-
-<button class="btn" onclick="buyReward(120)">
-Einlösen
-</button>
-
-</div>
-
-<div class="shop-item">
-
-<div>
-<div style="font-weight:700;">
-Gratis Kleinteil
-</div>
-
-<div style="color:var(--muted);">
-250 Punkte
-</div>
-</div>
-
-<button class="btn" onclick="buyReward(250)">
-Einlösen
-</button>
-
+<div class="stat-number"
+id="admin-finished-count">
+0
 </div>
 
 </div>
 
 </div>
 
-<!-- ADMIN -->
-
-<div id="admin-section" style="display:none;">
-
-<div class="card">
-
-<div class="card-title">
-🔑 Admin Dashboard
-</div>
-
-<div id="admin-orders"></div>
+<div id="admin-orders-list"></div>
 
 </div>
 
 </div>
 
-</div>
-</div>
+<!-- =========================
+4. EXTRA STYLES
+========================= -->
+
+<style>
+
+.stat-box{
+
+padding:20px;
+
+border-radius:20px;
+
+background:#f9fafb;
+
+border:1px solid #e5e7eb;
+}
+
+.stat-label{
+
+font-size:.8rem;
+
+font-weight:700;
+
+color:#6b7280;
+
+margin-bottom:10px;
+}
+
+.stat-number{
+
+font-size:2rem;
+
+font-weight:700;
+
+color:#2563eb;
+}
+
+.status-badge{
+
+padding:8px 14px;
+
+border-radius:999px;
+
+font-size:.75rem;
+
+font-weight:700;
+
+display:inline-flex;
+
+align-items:center;
+}
+
+.status-open{
+background:#eff6ff;
+color:#2563eb;
+}
+
+.status-download{
+background:#fef3c7;
+color:#b45309;
+}
+
+.status-print{
+background:#ede9fe;
+color:#7c3aed;
+}
+
+.status-finished{
+background:#dcfce7;
+color:#15803d;
+}
+
+.status-done{
+background:#e5e7eb;
+color:#374151;
+}
+
+</style>
+
+<!-- =========================
+5. TAB SYSTEM ERWEITERN
+========================= -->
 
 <script>
 
-const USER_KEY = "egn_user";
-const ORDER_KEY = "egn_orders";
-const MODEL_KEY = "egn_models";
-const POINT_KEY = "egn_points";
-
-let currentWeight = 0;
-let currentPrice = 0;
-
-function loginUser(){
-
-const name =
-document.getElementById('login-name').value.trim();
-
-const clazz =
-document.getElementById('login-class').value.trim();
-
-const email =
-document.getElementById('login-email').value.trim();
-
-const err =
-document.getElementById('error');
-
-err.style.display='none';
-
-if(!name || !clazz || !email){
-
-err.style.display='block';
-err.innerText='Bitte alle Felder ausfüllen.';
-return;
-}
-
-if(!email.includes('@')){
-
-err.style.display='block';
-err.innerText='Bitte gültige E-Mail eingeben.';
-return;
-}
-
-localStorage.setItem(USER_KEY,JSON.stringify({
-name,
-class:clazz,
-email
-}));
-
-document.getElementById('login-screen').style.display='none';
-document.getElementById('main-site').style.display='block';
-
-autofill();
-renderOrders();
-renderModels();
-updatePoints();
-}
-
-function autofill(){
-
-const u =
-JSON.parse(localStorage.getItem(USER_KEY));
-
-if(!u) return;
-
-[
-'idea-name',
-'stl-name'
-].forEach(id=>{
-document.getElementById(id).value=u.name;
-});
-
-[
-'idea-class',
-'stl-class'
-].forEach(id=>{
-document.getElementById(id).value=u.class;
-});
-
-[
-'idea-email',
-'stl-email'
-].forEach(id=>{
-document.getElementById(id).value=u.email;
-});
-}
-
 function switchTab(tab){
 
-document.getElementById('orders-section').style.display='none';
-document.getElementById('models-section').style.display='none';
-document.getElementById('upload-section').style.display='none';
-document.getElementById('shop-section').style.display='none';
+document.getElementById(
+'orders-section'
+).style.display='none';
+
+document.getElementById(
+'models-section'
+).style.display='none';
+
+document.getElementById(
+'upload-section'
+).style.display='none';
+
+document.getElementById(
+'shop-section'
+).style.display='none';
+
+document.getElementById(
+'points-section'
+).style.display='none';
+
+document.getElementById(
+'admin-orders-section'
+).style.display='none';
 
 if(tab==='orders'){
-document.getElementById('orders-section').style.display='block';
+document.getElementById(
+'orders-section'
+).style.display='block';
 }
 
 if(tab==='models'){
-document.getElementById('models-section').style.display='block';
+document.getElementById(
+'models-section'
+).style.display='block';
 }
 
 if(tab==='upload'){
-document.getElementById('upload-section').style.display='block';
+document.getElementById(
+'upload-section'
+).style.display='block';
 }
 
 if(tab==='shop'){
-document.getElementById('shop-section').style.display='block';
-}
-}
-
-function showIdeaFile(file){
-
-if(!file) return;
-
 document.getElementById(
-'idea-file-text'
-).innerText=file.name;
+'shop-section'
+).style.display='block';
 }
 
-function handleStl(file){
-
-if(!file) return;
-
+if(tab==='points'){
 document.getElementById(
-'stl-text'
-).innerText=file.name;
-
-calculatePrice();
+'points-section'
+).style.display='block';
 }
 
-function calculatePrice(){
-
-const count =
-parseInt(
-document.getElementById('count').value
-) || 1;
-
-currentWeight =
-Math.floor(Math.random()*80)+5;
-
-const base =
-(currentWeight*0.08)+2;
-
-let total =
-base*count;
-
-const reward =
-document.getElementById('reward').value;
-
-const materialCost =
-currentWeight*0.03;
-
-if(reward==='10'){
-
-const disc =
-Math.min(total*0.1,total-materialCost);
-
-total -= disc;
-}
-
-if(reward==='25'){
-
-const disc =
-Math.min(total*0.25,total-materialCost);
-
-total -= disc;
-}
-
-if(
-reward==='free'
-&&
-currentWeight<10
-){
-
-total =
-Math.max(materialCost,0.5);
-}
-
-currentPrice=total;
-
+if(tab==='admin-orders'){
 document.getElementById(
-'price'
-).innerText=
-total.toFixed(2).replace('.',',')+' €';
-
-document.getElementById(
-'weight'
-).innerText=
-currentWeight+'g geschätzt';
-}
-
-function submitIdea(){
-
-const orders =
-JSON.parse(
-localStorage.getItem(ORDER_KEY)
-|| '[]'
-);
-
-orders.unshift({
-
-id:'O-'+Date.now(),
-
-type:'Idee',
-
-status:'Eingegangen',
-
-desc:
-document.getElementById('idea-desc').value
-
-});
-
-localStorage.setItem(
-ORDER_KEY,
-JSON.stringify(orders)
-);
-
-document.getElementById(
-'idea-success'
+'admin-orders-section'
 ).style.display='block';
 
-renderOrders();
+renderAdminOrders();
 }
+
+}
+
+</script>
+
+<!-- =========================
+6. AUFTRÄGE MIT STATUS
+========================= -->
+
+<script>
 
 function submitStl(){
 
@@ -1025,13 +355,15 @@ orders.unshift({
 
 id:'O-'+Date.now(),
 
-type:'STL',
+type:'STL Druck',
 
 status:'Eingegangen',
 
 weight:currentWeight,
 
-price:currentPrice
+price:currentPrice,
+
+createdAt:Date.now()
 
 });
 
@@ -1044,14 +376,22 @@ addPoints(
 Math.min(currentWeight,80)
 );
 
-document.getElementById(
-'stl-success'
-).style.display='block';
-
 renderOrders();
 
 updatePoints();
+
+document.getElementById(
+'stl-success'
+).style.display='block';
 }
+
+</script>
+
+<!-- =========================
+7. USER AUFTRÄGE MIT STATUS
+========================= -->
+
+<script>
 
 function renderOrders(){
 
@@ -1062,7 +402,9 @@ localStorage.getItem(ORDER_KEY)
 );
 
 const list =
-document.getElementById('orders-list');
+document.getElementById(
+'orders-list'
+);
 
 if(orders.length===0){
 
@@ -1078,181 +420,121 @@ orders.map(o=>`
 <div style="
 display:flex;
 justify-content:space-between;
-margin-bottom:10px;
-">
-
-<div style="font-weight:700;">
-${o.type}
-</div>
-
-<div>
-${o.status}
-</div>
-
-</div>
-
-<div>
-${o.desc || ''}
-</div>
-
-<div style="
-margin-top:10px;
-font-weight:700;
-color:var(--accent);
-">
-
-${o.price ? o.price.toFixed(2)+' €' : ''}
-
-</div>
-
-</div>
-
-`).join('');
-}
-
-function uploadModel(){
-
-const title =
-document.getElementById(
-'model-title'
-).value;
-
-const desc =
-document.getElementById(
-'model-desc'
-).value;
-
-const models =
-JSON.parse(
-localStorage.getItem(MODEL_KEY)
-|| '[]'
-);
-
-models.unshift({
-title,
-desc
-});
-
-localStorage.setItem(
-MODEL_KEY,
-JSON.stringify(models)
-);
-
-addPoints(40);
-
-renderModels();
-
-alert('Modell veröffentlicht.');
-}
-
-function renderModels(){
-
-const models =
-JSON.parse(
-localStorage.getItem(MODEL_KEY)
-|| '[]'
-);
-
-const list =
-document.getElementById(
-'models-list'
-);
-
-if(models.length===0){
-
-list.innerHTML='Noch keine Modelle.';
-return;
-}
-
-list.innerHTML =
-models.map(m=>`
-
-<div class="order">
-
-<div style="
-font-weight:700;
-margin-bottom:10px;
-">
-
-${m.title}
-
-</div>
-
-<div style="
-color:var(--muted);
+align-items:center;
 margin-bottom:14px;
 ">
 
-${m.desc}
+<div style="
+font-weight:700;
+font-size:1rem;
+">
+
+${o.type}
 
 </div>
 
-<button class="btn">
-Download
-</button>
+<div class="
+status-badge
+${getStatusClass(o.status)}
+">
+
+${o.status}
+
+</div>
+
+</div>
+
+<div style="
+margin-bottom:10px;
+color:#6b7280;
+">
+
+${o.weight || 0}g
+
+</div>
+
+<div style="
+font-size:1.1rem;
+font-weight:700;
+color:#2563eb;
+">
+
+${o.price ?
+o.price.toFixed(2)+' €'
+:
+''}
+
+</div>
 
 </div>
 
 `).join('');
 }
 
-function addPoints(n){
+function getStatusClass(status){
 
-const p =
-parseInt(
-localStorage.getItem(POINT_KEY)
-|| '0'
-)+n;
+if(status==='Eingegangen')
+return 'status-open';
 
-localStorage.setItem(
-POINT_KEY,
-p
-);
+if(status==='Heruntergeladen')
+return 'status-download';
+
+if(status==='Am Drucken')
+return 'status-print';
+
+if(status==='Fertig')
+return 'status-finished';
+
+if(status==='Abgeholt')
+return 'status-done';
+
+return 'status-open';
 }
 
-function updatePoints(){
+</script>
 
-document.getElementById(
-'points'
-).innerText=
-localStorage.getItem(POINT_KEY)
-|| 0;
-}
+<!-- =========================
+8. ADMIN LOGIN
+========================= -->
 
-function buyReward(cost){
-
-const p =
-parseInt(
-localStorage.getItem(POINT_KEY)
-|| '0'
-);
-
-if(p<cost){
-
-alert('Nicht genug Punkte.');
-return;
-}
-
-alert(
-'Belohnung aktiviert.'
-);
-}
+<script>
 
 function adminLogin(){
 
 const pw =
-prompt('Admin Passwort');
+prompt(
+'Admin Passwort'
+);
 
-if(pw!=='egn') return;
+if(pw!=='egn'){
 
-document.getElementById(
-'admin-section'
-).style.display='block';
+alert(
+'Falsches Passwort.'
+);
 
-renderAdmin();
+return;
 }
 
-function renderAdmin(){
+document.getElementById(
+'admin-orders-tab'
+).style.display='inline-flex';
+
+alert(
+'Admin Modus aktiviert.'
+);
+
+renderAdminOrders();
+}
+
+</script>
+
+<!-- =========================
+9. ADMIN AUFTRÄGE RENDERN
+========================= -->
+
+<script>
+
+function renderAdminOrders(){
 
 const orders =
 JSON.parse(
@@ -1260,10 +542,39 @@ localStorage.getItem(ORDER_KEY)
 || '[]'
 );
 
+const wrap =
 document.getElementById(
-'admin-orders'
-).innerHTML=
+'admin-orders-list'
+);
 
+document.getElementById(
+'admin-open-count'
+).innerText =
+orders.filter(
+o=>o.status==='Eingegangen'
+).length;
+
+document.getElementById(
+'admin-printing-count'
+).innerText =
+orders.filter(
+o=>o.status==='Am Drucken'
+).length;
+
+document.getElementById(
+'admin-finished-count'
+).innerText =
+orders.filter(
+o=>o.status==='Fertig'
+).length;
+
+if(orders.length===0){
+
+wrap.innerHTML='Keine Aufträge.';
+return;
+}
+
+wrap.innerHTML =
 orders.map(o=>`
 
 <div class="admin-order">
@@ -1271,32 +582,103 @@ orders.map(o=>`
 <div style="
 display:flex;
 justify-content:space-between;
-margin-bottom:12px;
+align-items:center;
+margin-bottom:18px;
 ">
 
-<div style="font-weight:700;">
+<div>
+
+<div style="
+font-weight:700;
+font-size:1.05rem;
+">
+
 ${o.type}
+
 </div>
 
-<select onchange="
-changeStatus(
+<div style="
+font-size:.85rem;
+color:#6b7280;
+">
+
+${o.weight || 0}g
+
+</div>
+
+</div>
+
+<div class="
+status-badge
+${getStatusClass(o.status)}
+">
+
+${o.status}
+
+</div>
+
+</div>
+
+<div style="
+display:flex;
+gap:10px;
+flex-wrap:wrap;
+">
+
+<button class="btn"
+style="height:44px;"
+onclick="
+updateOrderStatus(
 '${o.id}',
-this.value
+'Heruntergeladen'
 )
 ">
 
-<option>Eingegangen</option>
-<option>In Bearbeitung</option>
-<option>Gedruckt</option>
-<option>Fertig</option>
-<option>Abgeholt</option>
+Heruntergeladen
 
-</select>
+</button>
 
-</div>
+<button class="btn"
+style="height:44px;"
+onclick="
+updateOrderStatus(
+'${o.id}',
+'Am Drucken'
+)
+">
 
-<div>
-${o.desc || ''}
+Am Drucken
+
+</button>
+
+<button class="btn"
+style="height:44px;"
+onclick="
+updateOrderStatus(
+'${o.id}',
+'Fertig'
+)
+">
+
+Fertig
+
+</button>
+
+<button class="btn"
+style="
+height:44px;
+background:#16a34a;
+"
+onclick="
+finishOrder(
+'${o.id}'
+)
+">
+
+Abgeholt
+
+</button>
+
 </div>
 
 </div>
@@ -1304,7 +686,7 @@ ${o.desc || ''}
 `).join('');
 }
 
-function changeStatus(id,status){
+function updateOrderStatus(id,status){
 
 const orders =
 JSON.parse(
@@ -1312,12 +694,12 @@ localStorage.getItem(ORDER_KEY)
 || '[]'
 );
 
-const o =
-orders.find(x=>x.id===id);
+const order =
+orders.find(o=>o.id===id);
 
-if(o){
+if(order){
 
-o.status=status;
+order.status=status;
 
 localStorage.setItem(
 ORDER_KEY,
@@ -1325,32 +707,63 @@ JSON.stringify(orders)
 );
 
 renderOrders();
+
+renderAdminOrders();
 }
 }
 
-window.onload=()=>{
+function finishOrder(id){
 
-const u =
-localStorage.getItem(USER_KEY);
+let orders =
+JSON.parse(
+localStorage.getItem(ORDER_KEY)
+|| '[]'
+);
 
-if(u){
+orders =
+orders.filter(
+o=>o.id!==id
+);
 
-document.getElementById(
-'login-screen'
-).style.display='none';
+localStorage.setItem(
+ORDER_KEY,
+JSON.stringify(orders)
+);
 
-document.getElementById(
-'main-site'
-).style.display='block';
-
-autofill();
 renderOrders();
-renderModels();
-updatePoints();
-}
+
+renderAdminOrders();
 }
 
 </script>
 
-</body>
-</html>
+<!-- =========================
+10. PUNKTE LIVE AKTUALISIEREN
+========================= -->
+
+<script>
+
+function updatePoints(){
+
+const points =
+localStorage.getItem(
+POINT_KEY
+) || 0;
+
+document.getElementById(
+'points'
+).innerText =
+points;
+
+const big =
+document.getElementById(
+'big-points-display'
+);
+
+if(big){
+
+big.innerText = points;
+}
+}
+
+</script>
