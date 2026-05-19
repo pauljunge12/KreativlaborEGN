@@ -1,654 +1,617 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kreativlabor EGN</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
-  <style>
-    :root {
-      --bg:#f4f3f0;--surface:#fff;--surface2:#fafaf8;--border:#e2e0db;--border2:#ccc9c2;
-      --text:#1a1916;--muted:#6b6860;--accent:#1d4ed8;--accent-lt:#eff4ff;
-      --warn:#c2410c;--warn-lt:#fff4ef;--success:#15803d;
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);line-height:1.4;font-size:.92rem;-webkit-font-smoothing:antialiased}
-    header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;position:sticky;top:0;z-index:40}
-    .container{max-width:1100px;margin:0 auto;padding:24px 20px}
-    .mono{font-family:'DM Mono',monospace;font-size:.85rem}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
-    .btn-primary{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:10px 18px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:.9rem;transition:opacity 0.15s}
-    .btn-primary:hover{opacity:0.9}
-    .btn-primary:disabled{opacity:0.5;cursor:not-allowed}
-    .btn-secondary{background:var(--surface);color:var(--text);border:1px solid var(--border2);border-radius:6px;padding:9px 16px;font-weight:500;cursor:pointer;font-size:.9rem}
-    .btn-secondary:hover{background:var(--surface2)}
-    .tabs-nav{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;padding-bottom:1px}
-    .tab-btn{background:transparent;border:none;padding:10px 16px;font-size:.95rem;font-weight:500;color:var(--muted);cursor:pointer;position:relative;bottom:-1px;border-bottom:2px solid transparent}
-    .tab-btn.active{color:var(--text);border-bottom-color:var(--text)}
-    .form-group{margin-bottom:16px}
-    .form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;color:var(--text)}
-    .form-control{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:10px 12px;font-size:.92rem;color:var(--text);font-family:inherit;transition:border-color 0.15s}
-    .form-control:focus{outline:none;border-color:var(--text);background:var(--surface)}
-    .dropzone{border:2px dashed var(--border2);border-radius:8px;padding:32px 20px;text-align:center;background:var(--surface2);cursor:pointer;transition:all 0.15s;position:relative}
-    .dropzone:hover{border-color:var(--text);background:var(--surface)}
-    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-    @media(max-width:768px){.grid-2{grid-template-columns:1fr}}
-    .toast{position:fixed;bottom:24px;right:24px;background:var(--text);color:var(--surface);padding:12px 20px;border-radius:8px;font-size:.9rem;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,0.15);display:none}
-  </style>
-</head>
+<!-- =========================================================
+KREATIVLABOR EGN — PROFESSIONAL EDITION v12
+ÜBERARBEITETE STRUKTUR
+- Login System
+- Admin Dashboard
+- Build/Skizzen Upload
+- Separate Modell-Datenbank
+- Punkte-Shop
+- Sicheres Rabatt-System ohne Minus
+========================================================= -->
+
+<!-- =========================
+1. LOGIN SCREEN
+========================= -->
+
 <body>
 
-  <header style="display:flex;align-items:center;justify-content:space-between;">
-    <div style="display:flex;align-items:center;gap:12px;">
-      <div style="font-weight:700;font-size:1.15rem;letter-spacing:-0.02em;">Kreativlabor EGN</div>
-      <div class="mono" style="font-size:.72rem;background:var(--bg);padding:2px 8px;border-radius:4px;color:var(--muted);">v11.2 - Professional Edition</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:16px;">
-      <button class="tab-btn active" id="main-tab-order" onclick="switchMainTab('order')">Auftrag aufgeben</button>
-      <button class="tab-btn" id="main-tab-db" onclick="switchMainTab('db')">Modell-Datenbank</button>
-      <button onclick="openAdminLogin()" style="background:transparent;border:none;font-size:.8rem;color:var(--muted);cursor:pointer;">🔑 Admin</button>
-    </div>
-  </header>
-
-  <div class="container" id="section-order">
-    <div class="tabs-nav">
-      <button class="tab-btn active" id="tab-idea" onclick="switchTab('idea')">💡 Freie Idee / Reparatur</button>
-      <button class="tab-btn" id="tab-stl" onclick="switchTab('stl')">📂 Eigene STL hochladen</button>
-    </div>
-
-    <div id="panel-idea">
-      <div class="card">
-        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:16px;">Projektbeschreibung & Reparaturanfrage</h2>
-        <div class="grid-2">
-          <div class="form-group">
-            <label>Name</label>
-            <input type="text" id="idea-name" class="form-control" placeholder="Vor- und Nachname" />
-          </div>
-          <div class="form-group">
-            <label>Klasse</label>
-            <input type="text" id="idea-class" class="form-control" placeholder="z.B. 9b oder JG11" />
-          </div>
-        </div>
-        <div class="form-group">
-          <label>E-Mail-Adresse</label>
-          <input type="email" id="idea-email" class="form-control" placeholder="schueler@egn-nordhorn.de" />
-        </div>
-        <div class="form-group">
-          <label>Was möchtest du drucken oder reparieren? (Genaue Beschreibung)</label>
-          <textarea id="idea-desc" class="form-control" rows="5" placeholder="Beschreibe dein Vorhaben so genau wie möglich. Falls es sich um eine Drucker-Reparatur oder Erweiterung handelt, gib bitte alle Details an..."></textarea>
-        </div>
-        <button class="btn-primary" onclick="submitIdeaOrder()">Auftrag einsenden</button>
-        <div id="idea-success-hint" style="display:none;margin-top:12px;color:var(--success);font-weight:600;">✓ Dein Projekt wurde erfolgreich übermittelt!</div>
-      </div>
-    </div>
-
-    <div id="panel-stl" style="display:none;">
-      <div class="card">
-        <h2 style="font-size:1.1rem;font-weight:600;margin-bottom:16px;">3D-Modell kalkulieren & bestellen</h2>
-        
-        <div class="grid-2">
-          <div>
-            <div class="form-group">
-              <label>Name</label>
-              <input type="text" id="stl-name" class="form-control" placeholder="Vor- und Nachname" />
-            </div>
-            <div class="form-group">
-              <label>Klasse</label>
-              <input type="text" id="stl-class" class="form-control" placeholder="z.B. 10a" />
-            </div>
-            <div class="form-group">
-              <label>E-Mail-Adresse</label>
-              <input type="email" id="stl-email" class="form-control" placeholder="deine@mail.com" />
-            </div>
-          </div>
-
-          <div>
-            <div class="form-group">
-              <label>Material</label>
-              <select id="stl-material" class="form-control" onchange="calculatePrice()">
-                <option value="PLA">PLA (Standard)</option>
-                <option value="PETG">PETG (Robust)</option>
-                <option value="TPU (flexibel)">TPU (Elastisch)</option>
-                <option value="ABS">ABS (Hitzebeständig)</option>
-              </select>
-            </div>
-            <div class="grid-2" style="gap:12px;">
-              <div class="form-group">
-                <label>Farbe</label>
-                <input type="text" id="stl-color" class="form-control" placeholder="z.B. Schwarz" value="Schwarz" />
-              </div>
-              <div class="form-group">
-                <label>Stückzahl</label>
-                <input type="number" id="stl-count" class="form-control" value="1" min="1" onchange="calculatePrice()" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label>Infill (Füllungsdichte)</label>
-              <select id="stl-infill" class="form-control" onchange="calculatePrice()">
-                <option value="15">15% (Leicht)</option>
-                <option value="20" selected>20% (Standard)</option>
-                <option value="40">40% (Stabil)</option>
-                <option value="80">80% (Massiv)</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-top:8px;">
-          <label>STL-Datei auswählen</label>
-          <div class="dropzone" onclick="document.getElementById('stl-file-input').click()">
-            <input type="file" id="stl-file-input" accept=".stl" style="display:none;" onchange="handleStlSelect(this.files[0])" />
-            <div id="stl-dz-prompt">📂 Klicke hier, um deine <b>.stl Datei</b> auszuwählen</div>
-            <div id="stl-file-info" style="display:none;margin-top:8px;font-weight:600;color:var(--accent);">
-              Ausgewählt: <span id="stl-file-name" class="mono"></span>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Spezielle Anmerkungen (optional)</label>
-          <textarea id="stl-notes" class="form-control" rows="2" placeholder="Besondere Wünsche oder Hinweise zur Ausrichtung..."></textarea>
-        </div>
-
-        <div style="border:1px solid var(--border);border-radius:6px;padding:12px;background:var(--surface2);margin-bottom:16px;">
-          <label style="display:flex;align-items:center;gap:8px;font-weight:600;cursor:pointer;">
-            <input type="checkbox" id="add-to-db" onchange="toggleDbFields()" />
-            Dieses Modell in der Schul-Datenbank für alle teilen (+ Belohnungspunkte!)
-          </label>
-          <div id="db-fields" style="display:none;flex-direction:column;gap:12px;margin-top:12px;border-top:1px solid var(--border);padding-top:12px;">
-            <div class="grid-2">
-              <div class="form-group" style="margin:0;">
-                <label>Modell-Name für die DB</label>
-                <input type="text" id="model-title" class="form-control" placeholder="z.B. Kopfhörerhalter" />
-              </div>
-              <div class="form-group" style="margin:0;">
-                <label>Kategorie</label>
-                <select id="db-category" class="form-control">
-                  <option value="allgemein">Allgemein</option>
-                  <option value="schule">Schule & Lernen</option>
-                  <option value="ersatzteil">Ersatzteil / Reparatur</option>
-                  <option value="gadget">Gadget / Deko</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-group" style="margin:0;">
-              <label>Kurze Beschreibung für Mitschüler</label>
-              <input type="text" id="model-desc" class="form-control" placeholder="Wofür ist das nützlich? Wie druckt man es am besten?" />
-            </div>
-          </div>
-        </div>
-
-        <div id="stl-price-section" style="display:none;margin-bottom:16px;">
-          <div id="stl-price-box" style="border:1px solid var(--border);border-radius:8px;padding:16px;background:var(--surface2);">
-            <div style="display:flex;justify-content:between;justify-content:space-between;align-items:center;margin-bottom:10px;">
-              <span id="stl-price-label" style="font-weight:700;font-size:.8rem;letter-spacing:0.05em;color:var(--muted);">PREISSCHÄTZUNG</span>
-              <div id="stl-price-spinner" style="display:none;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);">
-                <div style="width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--text);border-radius:50%;animation:spin 0.6s linear infinite;"></div> Analysiere Geometrie...
-              </div>
-              <div id="stl-price-amount-wrap" style="font-weight:700;font-size:1.3rem;color:var(--text);">
-                <span id="stl-price-amount">0,00 €</span>
-              </div>
-            </div>
-            
-            <div id="stl-price-rows" style="display:none;font-size:.82rem;border-top:1px solid var(--border);padding-top:10px;line-height:1.6;">
-              <div style="display:flex;justify-content:between;justify-content:space-between;">
-                <span style="color:var(--muted);">Errechnetes Modellgewicht:</span>
-                <span id="pr-weight" class="mono" style="font-weight:600;">0g</span>
-              </div>
-              <div style="display:flex;justify-content:between;justify-content:space-between;">
-                <span style="color:var(--muted);">Reiner Materialwert:</span>
-                <span id="pr-material" class="mono">0,00 €</span>
-              </div>
-              <div style="display:flex;justify-content:between;justify-content:space-between;">
-                <span style="color:var(--muted);">Labor- & Aufwandspauschale:</span>
-                <span id="pr-markup" class="mono" style="color:var(--warn);">0,00 €</span>
-              </div>
-              <div style="display:flex;justify-content:between;justify-content:space-between;border-top:1px solid var(--border);margin-top:6px;padding-top:4px;font-weight:700;font-size:.9rem;">
-                <span id="pr-total-label">Gesamt</span>
-                <span id="pr-total" style="color:var(--accent);">0,00 €</span>
-              </div>
-            </div>
-            <div id="stl-price-hint" style="font-size:.72rem;color:var(--muted);margin-top:8px;text-align:right;"></div>
-          </div>
-        </div>
-
-        <div id="stl-form-error" style="display:none;background:var(--warn-lt);border:1px solid var(--warn);color:var(--warn);padding:12px;border-radius:6px;margin-bottom:16px;font-size:.85rem;"></div>
-
-        <button class="btn-primary" style="width:100%;" onclick="submitStlOrder()">STL-Auftrag einreichen</button>
-        <div id="stl-success-hint" style="display:none;margin-top:12px;color:var(--success);font-weight:600;text-align:center;">✓ Dein Druckauftrag wurde erfolgreich eingereicht!</div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-top:24px;">
-      <div style="display:flex;justify-content:between;justify-content:space-between;align-items:center;margin-bottom:14px;">
-        <h3 style="font-weight:600;font-size:1rem;">Deine übermittelten Aufträge</h3>
-        <button onclick="clearAll()" style="background:transparent;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;">Alle löschen</button>
-      </div>
-      <div id="orders-list" style="display:flex;flex-direction:column;gap:10px;">
-        <div style="color:var(--muted);font-size:.85rem;text-align:center;padding:12px;">Noch keine Aufträge abgesendet.</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="container" id="section-db" style="display:none;">
-    <div class="card" style="display:flex;justify-content:between;justify-content:space-between;align-items:center;background:var(--surface2);">
-      <div>
-        <h2 style="font-size:1.1rem;font-weight:600;">Schul-Modellsammlung</h2>
-        <p style="color:var(--muted);font-size:.85rem;margin-top:2px;">Lade nützliche Modelle deiner Mitschüler herunter oder sammle Punkte durch eigene Uploads.</p>
-      </div>
-      <div style="text-align:right;background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:8px;">
-        <div style="font-size:.75rem;font-weight:600;color:var(--muted);">DEINE PUNKTE</div>
-        <div class="mono" style="font-size:1.4rem;font-weight:700;color:var(--accent);" id="db-points-num">0</div>
-      </div>
-    </div>
-
-    <div id="db-list" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:16px;">
-      </div>
-  </div>
-
-  <div id="toast" class="toast"><span id="toast-inner"></span></div>
-
-  <style>
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
-
-  <script>
-    /* --- Globale Variablen & Konfiguration --- */
-    const KEY = 'kreativlabor_orders';
-    const DB_KEY = 'kreativlabor_model_db';
-    const POINTS_KEY = 'kreativlabor_user_points';
-    const ADMIN_PASSWORD = 'egn';
-
-    const MATERIAL_DATA = {
-      'PLA': { density: 1.24, pricePerKg: 28.00, markup: 2.2 },
-      'PETG': { density: 1.27, pricePerKg: 32.00, markup: 2.2 },
-      'TPU (flexibel)': { density: 1.21, pricePerKg: 45.00, markup: 2.5 },
-      'ABS': { density: 1.05, pricePerKg: 35.00, markup: 2.2 }
-    };
-
-    let isAdmin = false;
-    let calculatedPrice = null;
-    let stlFile = null;
-
-    window.onload = () => {
-      updatePointsDisplay();
-      renderOrders();
-      renderDB();
-    };
-
-    /* --- Punkte-System mit Gewichtsstaffelung --- */
-    function getPoints() { return parseInt(localStorage.getItem(POINTS_KEY) || '0'); }
+<div id="login-screen" style="position:fixed;inset:0;background:#f4f3f0;display:flex;align-items:center;justify-content:center;z-index:9999;">
+  <div style="width:420px;background:white;padding:32px;border-radius:14px;border:1px solid #ddd;">
     
-    function addPoints(n) {
-      const p = getPoints() + n;
-      localStorage.setItem(POINTS_KEY, p);
-      updatePointsDisplay();
-      showToast(`+${n} Punkte! Gesamtstand: ${p} ⭐`);
+    <h1 style="font-size:1.5rem;font-weight:700;margin-bottom:8px;">
+      Kreativlabor EGN
+    </h1>
+
+    <p style="margin-bottom:24px;color:#666;">
+      Bitte melde dich mit deiner Schul-E-Mail an.
+    </p>
+
+    <div class="form-group">
+      <label>Vor- und Nachname</label>
+      <input type="text" id="login-name" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Klasse</label>
+      <input type="text" id="login-class" class="form-control">
+    </div>
+
+    <div class="form-group">
+      <label>Schul-E-Mail</label>
+      <input type="email" id="login-email" class="form-control"
+      placeholder="name@egn-nordhorn.de">
+    </div>
+
+    <button class="btn-primary" style="width:100%;"
+    onclick="loginUser()">
+      Anmelden
+    </button>
+
+    <div id="login-error"
+    style="display:none;color:#c2410c;margin-top:14px;font-size:.85rem;">
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================
+2. USER SESSION
+========================= -->
+
+<script>
+
+const USER_KEY = "egn_current_user";
+
+function loginUser(){
+
+  const name = document.getElementById('login-name').value.trim();
+  const clazz = document.getElementById('login-class').value.trim();
+  const email = document.getElementById('login-email').value.trim();
+
+  const err = document.getElementById('login-error');
+
+  err.style.display = 'none';
+
+  if(!name || !clazz || !email){
+    err.innerText = "Bitte alle Felder ausfüllen.";
+    err.style.display = 'block';
+    return;
+  }
+
+  if(!email.endsWith('@egn-nordhorn.de')){
+    err.innerText = "Nur Schul-E-Mails erlaubt.";
+    err.style.display = 'block';
+    return;
+  }
+
+  localStorage.setItem(USER_KEY, JSON.stringify({
+    name,
+    class: clazz,
+    email
+  }));
+
+  document.getElementById('login-screen').style.display = 'none';
+
+  autofillUserData();
+}
+
+function autofillUserData(){
+
+  const user = JSON.parse(localStorage.getItem(USER_KEY));
+
+  if(!user) return;
+
+  [
+    'idea-name',
+    'stl-name'
+  ].forEach(id=>{
+    if(document.getElementById(id)){
+      document.getElementById(id).value = user.name;
     }
+  });
 
-    function updatePointsDisplay() {
-      const p = getPoints();
-      if (document.getElementById('db-points-num')) document.getElementById('db-points-num').textContent = p;
+  [
+    'idea-class',
+    'stl-class'
+  ].forEach(id=>{
+    if(document.getElementById(id)){
+      document.getElementById(id).value = user.class;
     }
+  });
 
-    function calculatePointsForWeight(weightGrams) {
-      if (weightGrams < 5) return 5;       // 3g Winzlinge geben kaum noch Punkte
-      if (weightGrams < 15) return 15;     // Kleine Objekte
-      if (weightGrams < 40) return 40;     // Mittlere Objekte
-      return 80;                           // Große, wertvolle Uploads (>40g)
+  [
+    'idea-email',
+    'stl-email'
+  ].forEach(id=>{
+    if(document.getElementById(id)){
+      document.getElementById(id).value = user.email;
     }
+  });
+}
 
-    /* --- Preisberechnung mit gestaffelter Aufwandspauschale --- */
-    async function calculatePrice() {
-      const mat = document.getElementById('stl-material').value;
-      const infill = parseInt(document.getElementById('stl-infill').value) || 20;
-      const count = parseInt(document.getElementById('stl-count').value) || 1;
+window.onload = () => {
 
-      if (!stlFile || !mat) return;
+  const user = localStorage.getItem(USER_KEY);
 
-      const section = document.getElementById('stl-price-section');
-      const box = document.getElementById('stl-price-box');
-      section.style.display = 'block';
-      
-      document.getElementById('stl-price-label').textContent = 'PREIS WIRD BERECHNET …';
-      document.getElementById('stl-price-spinner').style.display = 'flex';
-      document.getElementById('stl-price-amount-wrap').style.display = 'none';
-      document.getElementById('stl-price-rows').style.display = 'none';
+  if(user){
+    document.getElementById('login-screen').style.display = 'none';
+    autofillUserData();
+  }
 
-      try {
-        const buf = await stlFile.arrayBuffer();
-        const volMm3 = await parseStlVolume(buf);
-        const matInfo = MATERIAL_DATA[mat] || MATERIAL_DATA['PLA'];
+  renderOrders();
+  renderDB();
+  updatePointsDisplay();
+};
 
-        const eff = 0.20 + (1 - 0.20) * (infill / 100);
-        const massG = (volMm3 / 1000) * eff * matInfo.density;
-        
-        // Filamentkosten
-        const filCost = (massG / 1000) * matInfo.pricePerKg;
-        // Markup
-        let markupAmt = filCost * (matInfo.markup - 1);
+</script>
 
-        // GESTAFFELTE AUFWANDSPAUSCHALE
-        let setupFee = 1.00; // Standardwert ab 5g bis 50g
-        if (massG < 5) {
-          setupFee = 0.50;   // Niedrigere Pauschale für absolute Winzlinge
-        } else if (massG > 50) {
-          setupFee = 2.50;   // Erhöhte Servicepauschale für zeitaufwändige Großprojekte (>50g)
-        }
+<!-- =========================
+3. BUILD / SKIZZEN UPLOAD
+========================= -->
 
-        const totalOne = filCost + markupAmt + setupFee;
-        const totalAll = totalOne * count;
+<div class="form-group">
+  <label>Build / Skizze / Reparaturbild</label>
 
-        calculatedPrice = { totalOne, totalAll, weight: massG, count, filCost, markupAmt, setupFee };
+  <div class="dropzone"
+  onclick="document.getElementById('idea-image').click()">
 
-        // UI Updates
-        document.getElementById('stl-price-spinner').style.display = 'none';
-        document.getElementById('stl-price-label').textContent = 'PREISSCHÄTZUNG FERTIG';
-        document.getElementById('stl-price-amount').textContent = `${totalAll.toFixed(2).replace('.', ',')} €`;
-        document.getElementById('stl-price-amount-wrap').style.display = 'block';
+    <input
+    type="file"
+    id="idea-image"
+    accept=".png,.jpg,.jpeg,.pdf"
+    style="display:none;"
+    onchange="handleIdeaImage(this.files[0])">
 
-        document.getElementById('pr-weight').textContent = `${(massG * count).toFixed(1)}g`;
-        document.getElementById('pr-material').textContent = `${(filCost * count).toFixed(2).replace('.', ',')} €`;
-        
-        let feeLabel = setupFee === 2.50 ? '(inkl. 2,50€ Großprojekt-Pauschale)' : '(inkl. Pauschale)';
-        document.getElementById('pr-markup').textContent = `+ ${((markupAmt + setupFee) * count).toFixed(2).replace('.', ',')} € ${feeLabel}`;
-        
-        document.getElementById('pr-total-label').textContent = count > 1 ? `Gesamt (${count}×)` : 'Gesamt';
-        document.getElementById('pr-total').textContent = `${totalAll.toFixed(2).replace('.', ',')} €`;
-        document.getElementById('stl-price-rows').style.display = 'block';
+    <div id="idea-image-text">
+      📷 Bild oder Skizze hochladen
+    </div>
 
-        const hints = [];
-        if (massG > 50) hints.push('⚠ Großprojekt: Erhöhte Aufwandspauschale eingerechnet.');
-        else hints.push('Aufwandspauschale eingerechnet.');
-        hints.push('Endpreis kann leicht abweichen.');
-        document.getElementById('stl-price-hint').textContent = hints.join(' · ');
-        document.getElementById('stl-price-hint').style.display = 'block';
+  </div>
+</div>
 
-      } catch (err) {
-        document.getElementById('stl-price-label').textContent = 'BERECHNUNGSFEHLER';
-        document.getElementById('stl-price-spinner').style.display = 'none';
-      }
-    }
+<script>
 
-    /* --- STL Auftrag einreichen (KORRIGIERT & JETZT VOLL FUNKTIONSFÄHIG) --- */
-    async function submitStlOrder() {
-      const errEl = document.getElementById('stl-form-error');
-      errEl.style.display = 'none';
-      errEl.innerHTML = '';
+let ideaImage = null;
 
-      const name = document.getElementById('stl-name').value.trim();
-      const clazz = document.getElementById('stl-class').value.trim();
-      const email = document.getElementById('stl-email').value.trim();
-      const mat = document.getElementById('stl-material').value;
-      const color = document.getElementById('stl-color').value.trim();
-      const count = parseInt(document.getElementById('stl-count').value) || 1;
-      const infill = document.getElementById('stl-infill').value;
-      const notes = document.getElementById('stl-notes').value.trim();
-      const addToDb = document.getElementById('add-to-db').checked;
+function handleIdeaImage(file){
 
-      // Pflichtfeld-Validierung
-      const errors = [];
-      if (!name) errors.push('Bitte gib deinen Namen an.');
-      if (!clazz) errors.push('Bitte gib deine Klasse an.');
-      if (!email || !email.includes('@')) errors.push('Bitte gib eine gültige E-Mail-Adresse an.');
-      if (!stlFile) errors.push('Bitte lade eine gültige STL-Datei hoch.');
-      if (!mat) errors.push('Bitte wähle ein Material.');
-      if (!color) errors.push('Bitte gib eine Wunschfarbe an.');
+  if(!file) return;
 
-      if (addToDb) {
-        if (!document.getElementById('model-title').value.trim()) errors.push('Modellname für die Datenbank fehlt.');
-        if (!document.getElementById('model-desc').value.trim()) errors.push('Beschreibung für die Datenbank fehlt.');
-      }
+  ideaImage = file;
 
-      if (errors.length > 0) {
-        errEl.innerHTML = errors.map(e => `• ${e}`).join('<br>');
-        errEl.style.display = 'block';
-        return;
-      }
+  document.getElementById('idea-image-text').innerHTML =
+  `
+  ✅ ${file.name}
+  `;
+}
 
-      const btn = document.querySelector('#panel-stl .btn-primary');
-      btn.disabled = true;
-      btn.textContent = 'Wird übermittelt …';
+</script>
 
-      try {
-        const weight = calculatedPrice ? calculatedPrice.weight : 0;
-        const priceStr = calculatedPrice ? `${calculatedPrice.totalAll.toFixed(2).replace('.', ',')} €` : 'Wird berechnet';
+<!-- =========================
+4. SEPARATE MODELL DATENBANK
+========================= -->
 
-        const orders = getOrders();
-        const newId = 'O-' + Date.now().toString().slice(-4);
-        
-        orders.unshift({
-          id: newId,
-          type: 'print',
-          name, class: clazz, email, timestamp: Date.now(),
-          desc: `STL-Druck: ${stlFile.name} (${weight.toFixed(1)}g) | ${mat} | Farbe: ${color} | ${count}× | Infill: ${infill}%\nNotizen: ${notes}`,
-          price: priceStr
-        });
-        saveOrders(orders);
+<button class="tab-btn"
+onclick="switchMainTab('upload')">
+📚 Modell Upload
+</button>
 
-        if (addToDb) {
-          const dbTitle = document.getElementById('model-title').value.trim();
-          const dbDesc = document.getElementById('model-desc').value.trim();
-          const models = getModels();
-          
-          const pointsGained = calculatePointsForWeight(weight);
+<div class="container"
+id="section-upload"
+style="display:none;">
 
-          models.unshift({
-            id: 'M-' + Date.now().toString().slice(-4),
-            title: dbTitle,
-            desc: dbDesc,
-            category: document.getElementById('db-category').value,
-            weight: weight,
-            creator: name,
-            downloads: 0,
-            photo: ''
-          });
-          saveModels(models);
-          addPoints(pointsGained);
-          renderDB();
-        }
+<div class="card">
 
-        // Formular zurücksetzen
-        document.getElementById('stl-color').value = 'Schwarz';
-        document.getElementById('stl-notes').value = '';
-        if(document.getElementById('model-title')) document.getElementById('model-title').value = '';
-        if(document.getElementById('model-desc')) document.getElementById('model-desc').value = '';
-        document.getElementById('add-to-db').checked = false;
-        document.getElementById('db-fields').style.display = 'none';
-        
-        clearStlFile();
-        renderOrders();
+<h2>Eigenes Modell hochladen</h2>
 
-        document.getElementById('stl-success-hint').style.display = 'block';
-        showToast('✓ Druckauftrag erfolgreich erfasst!');
-      } catch (err) {
-        errEl.innerHTML = `• Fehler: ${err.message}`;
-        errEl.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'STL-Auftrag einreichen';
-      }
-    }
+<div class="form-group">
+<label>STL Datei</label>
 
-    /* --- Freie Idee / Reparatur einreichen --- */
-    function submitIdeaOrder() {
-      const name = document.getElementById('idea-name').value.trim();
-      const clazz = document.getElementById('idea-class').value.trim();
-      const email = document.getElementById('idea-email').value.trim();
-      const desc = document.getElementById('idea-desc').value.trim();
+<input type="file"
+accept=".stl">
+</div>
 
-      if (!name || !clazz || !email || !desc) {
-        alert('Bitte fülle alle Felder aus!');
-        return;
-      }
+<div class="form-group">
+<label>Vorschaubild</label>
 
-      const orders = getOrders();
-      orders.unshift({
-        id: 'O-' + Date.now().toString().slice(-4),
-        type: 'idea',
-        name, class: clazz, email, timestamp: Date.now(),
-        desc: `Projekt- / Reparaturanfrage / Erweiterung:\n${desc}`,
-        price: 'Nach Absprache'
-      });
-      saveOrders(orders);
+<input type="file"
+accept=".png,.jpg,.jpeg">
+</div>
 
-      document.getElementById('idea-desc').value = '';
-      renderOrders();
-      document.getElementById('idea-success-hint').style.display = 'block';
-      showToast('✓ Anfrage erfolgreich gesendet!');
-    }
+<div class="form-group">
+<label>Modellname</label>
 
-    /* --- STL Geometrie Parser --- */
-    async function parseStlVolume(buffer) {
-      const view = new DataView(buffer);
-      if (buffer.byteLength < 84) throw new Error('Ungültige Datei.');
-      
-      let isAscii = true;
-      for (let i = 0; i < 80; i++) {
-        if (view.getUint8(i) === 0) { isAscii = false; break; }
-      }
-      
-      if (isAscii) {
-        const text = new TextDecoder().decode(buffer);
-        if (text.toLowerCase().includes('solid')) return parseStlAsciiVolume(text);
-      }
-      
-      const numTriangles = view.getUint32(80, true);
-      let totalVolume = 0;
-      let offset = 84;
-      
-      for (let i = 0; i < numTriangles; i++) {
-        if (offset + 50 > buffer.byteLength) break;
-        const x1 = view.getFloat32(offset + 12, true), y1 = view.getFloat32(offset + 16, true), z1 = view.getFloat32(offset + 20, true);
-        const x2 = view.getFloat32(offset + 24, true), y2 = view.getFloat32(offset + 28, true), z2 = view.getFloat32(offset + 32, true);
-        const x3 = view.getFloat32(offset + 36, true), y3 = view.getFloat32(offset + 40, true), z3 = view.getFloat32(offset + 44, true);
-        
-        totalVolume += (-x3 * y2 * z1 + x2 * y3 * z1 + x3 * y1 * z2 - x1 * y3 * z2 - x2 * y1 * z3 + x1 * y2 * z3) / 6;
-        offset += 50;
-      }
-      return Math.abs(totalVolume);
-    }
+<input type="text"
+class="form-control">
+</div>
 
-    function parseStlAsciiVolume(text) {
-      const lines = text.split('\n');
-      let totalVolume = 0;
-      let v = [];
-      for (let line of lines) {
-        line = line.trim().toLowerCase();
-        if (line.startsWith('vertex')) {
-          const parts = line.split(/\s+/).filter(Boolean);
-          if (parts.length >= 4) v.push([parseFloat(parts[1]), parseFloat(parts[2]), parseFloat(parts[3])]);
-        }
-        if (v.length === 3) {
-          const [p1, p2, p3] = v;
-          totalVolume += (-p3[0]*p2[1]*p1[2] + p2[0]*p3[1]*p1[2] + p3[0]*p1[1]*p2[2] - p1[0]*p3[1]*p2[2] - p2[0]*p1[1]*p3[2] + p1[0]*p2[1]*p3[2]) / 6;
-          v = [];
-        }
-      }
-      return Math.abs(totalVolume);
-    }
+<div class="form-group">
+<label>Beschreibung</label>
 
-    /* --- Navigation & Tabs --- */
-    function switchMainTab(tab) {
-      document.getElementById('section-order').style.display = tab === 'order' ? 'block' : 'none';
-      document.getElementById('section-db').style.display = tab === 'db' ? 'block' : 'none';
-      document.getElementById('main-tab-order').classList.toggle('active', tab === 'order');
-      document.getElementById('main-tab-db').classList.toggle('active', tab === 'db');
-    }
+<textarea
+class="form-control"
+rows="4"></textarea>
+</div>
 
-    /* --- Sub-Tabs --- */
-    function switchTab(tab) {
-      document.getElementById('panel-idea').style.display = tab === 'idea' ? 'block' : 'none';
-      document.getElementById('panel-stl').style.display = tab === 'stl' ? 'block' : 'none';
-      document.getElementById('tab-idea').classList.toggle('active', tab === 'idea');
-      document.getElementById('tab-stl').classList.toggle('active', tab === 'stl');
-    }
+<div class="form-group">
+<label>Kategorie</label>
 
-    function handleStlSelect(file) {
-      if(!file) return;
-      stlFile = file;
-      document.getElementById('stl-file-name').textContent = file.name;
-      document.getElementById('stl-file-info').style.display = 'block';
-      calculatePrice();
-    }
+<select class="form-control">
 
-    function clearStlFile() {
-      stlFile = null;
-      document.getElementById('stl-file-input').value = '';
-      document.getElementById('stl-file-info').style.display = 'none';
-      document.getElementById('stl-price-section').style.display = 'none';
-    }
+<option>Deko</option>
+<option>Ersatzteil</option>
+<option>Schule</option>
+<option>Werkzeug</option>
 
-    function toggleDbFields() {
-      const checked = document.getElementById('add-to-db').checked;
-      document.getElementById('db-fields').style.display = checked ? 'flex' : 'none';
-    }
+</select>
+</div>
 
-    function getOrders() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
-    function saveOrders(o) { localStorage.setItem(KEY, JSON.stringify(o)); }
-    function getModels() { try { return JSON.parse(localStorage.getItem(DB_KEY)) || []; } catch { return []; } }
-    function saveModels(m) { localStorage.setItem(DB_KEY, JSON.stringify(m)); }
+<button class="btn-primary">
+Modell veröffentlichen
+</button>
 
-    function renderOrders() {
-      const list = document.getElementById('orders-list');
-      const orders = getOrders();
-      if(orders.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted);font-size:.85rem;text-align:center;padding:12px;">Noch keine Aufträge abgesendet.</div>';
-        return;
-      }
-      list.innerHTML = orders.map(o => `
-        <div style="border:1px solid var(--border);background:var(--surface2);padding:12px;border-radius:8px;font-size:.85rem;">
-          <div style="display:flex;justify-content:space-between;font-weight:600;margin-bottom:4px;">
-            <span>${o.id} (${o.name}, Klasse ${o.class})</span>
-            <span style="color:var(--accent);">${o.price}</span>
-          </div>
-          <div style="white-space:pre-wrap;color:var(--muted);font-size:.8rem;">${o.desc}</div>
-        </div>
-      `).join('');
-    }
+</div>
+</div>
 
-    function renderDB() {
-      const list = document.getElementById('db-list');
-      const models = getModels();
-      if(models.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted);font-size:.85rem;grid-column:1/-1;text-align:center;padding:24px;">Die Datenbank ist noch leer. Mache den Anfang!</div>';
-        return;
-      }
-      list.innerHTML = models.map(m => `
-        <div class="card" style="margin:0;display:flex;flex-direction:column;justify-content:space-between;">
-          <div>
-            <div style="font-weight:600;font-size:1rem;margin-bottom:4px;">${m.title}</div>
-            <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;">Kategorie: ${m.category} · von ${m.creator}</div>
-            <p style="font-size:.82rem;color:var(--text);margin-bottom:12px;">${m.desc}</p>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:10px;font-size:.8rem;">
-            <span class="mono">${m.weight.toFixed(1)}g</span>
-            <button class="btn-secondary" style="padding:4px 10px;font-size:.78rem;" onclick="showToast('Download gestartet (Simulation)')">⬇ Herunterladen</button>
-          </div>
-        </div>
-      `).join('');
-    }
+<!-- =========================
+5. PUNKTE SYSTEM OHNE MINUS
+========================= -->
 
-    function clearAll() {
-      if(confirm('Möchtest du wirklich alle deine lokal angezeigten Aufträge löschen?')) {
-        saveOrders([]);
-        renderOrders();
-      }
-    }
+<script>
 
-    function openAdminLogin() {
-      const p = prompt('Bitte Admin-Passwort eingeben:');
-      if (p === ADMIN_PASSWORD) { isAdmin = true; showToast('Erfolgreich als Admin angemeldet.'); }
-      else if(p !== null) { alert('Falsches Passwort!'); }
-    }
+function calculateSafeDiscount(price){
 
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      document.getElementById('toast-inner').textContent = msg;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 3000);
-    }
-  </script>
-</body>
-</html>
+  // MINDESTKOSTEN
+  const minimumCost = calculatedPrice.filCost;
+
+  // maximaler Rabatt
+  const maxDiscount = price - minimumCost;
+
+  return Math.max(0, maxDiscount);
+}
+
+</script>
+
+<!-- =========================
+6. PUNKTE SHOP
+========================= -->
+
+<div class="card">
+
+<h2>⭐ Punkte Shop</h2>
+
+<div style="display:grid;gap:12px;">
+
+<div class="shop-item">
+  <div>
+    <b>10% Rabatt</b>
+    <div>50 Punkte</div>
+  </div>
+
+  <button onclick="redeemReward(50,'10')"
+  class="btn-primary">
+    Einlösen
+  </button>
+</div>
+
+<div class="shop-item">
+  <div>
+    <b>25% Rabatt</b>
+    <div>120 Punkte</div>
+  </div>
+
+  <button onclick="redeemReward(120,'25')"
+  class="btn-primary">
+    Einlösen
+  </button>
+</div>
+
+<div class="shop-item">
+  <div>
+    <b>Kleinteil gratis (&lt;10g)</b>
+    <div>250 Punkte</div>
+  </div>
+
+  <button onclick="redeemReward(250,'free-small')"
+  class="btn-primary">
+    Einlösen
+  </button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let activeReward = null;
+
+function redeemReward(cost,reward){
+
+  const points = getPoints();
+
+  if(points < cost){
+
+    showToast("Nicht genug Punkte.");
+    return;
+  }
+
+  activeReward = {
+    cost,
+    reward
+  };
+
+  showToast("Belohnung aktiviert.");
+}
+
+</script>
+
+<!-- =========================
+7. STL RABATT ANWENDEN
+========================= -->
+
+<div style="
+border:1px solid #ddd;
+padding:14px;
+border-radius:8px;
+margin-bottom:18px;
+">
+
+<label style="display:flex;gap:10px;align-items:center;">
+
+<input type="checkbox"
+id="use-points-checkbox"
+onchange="applyRewardToPrice()">
+
+⭐ Punkte verwenden
+
+</label>
+
+<div style="margin-top:10px;font-size:.85rem;color:#666;">
+Aktive Belohnung:
+<span id="reward-status">
+Keine
+</span>
+</div>
+
+</div>
+
+<script>
+
+function applyRewardToPrice(){
+
+  if(!activeReward || !calculatedPrice) return;
+
+  let finalPrice = calculatedPrice.totalAll;
+
+  const safeDiscount =
+  calculateSafeDiscount(finalPrice);
+
+  if(activeReward.reward === '10'){
+
+    const discount =
+    Math.min(finalPrice * 0.10, safeDiscount);
+
+    finalPrice -= discount;
+  }
+
+  if(activeReward.reward === '25'){
+
+    const discount =
+    Math.min(finalPrice * 0.25, safeDiscount);
+
+    finalPrice -= discount;
+  }
+
+  if(
+    activeReward.reward === 'free-small'
+    &&
+    calculatedPrice.weight < 10
+  ){
+
+    finalPrice =
+    Math.max(
+      calculatedPrice.filCost,
+      0
+    );
+  }
+
+  document.getElementById(
+    'stl-price-amount'
+  ).innerText =
+  finalPrice.toFixed(2).replace('.',',') + ' €';
+}
+
+</script>
+
+<!-- =========================
+8. ADMIN DASHBOARD
+========================= -->
+
+<div id="admin-panel"
+style="display:none;">
+
+<div class="card">
+
+<h2>🔑 Admin Dashboard</h2>
+
+<div style="
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+gap:16px;
+margin-top:20px;
+">
+
+<div class="card">
+<h3>Offene Aufträge</h3>
+<div id="admin-open-count">0</div>
+</div>
+
+<div class="card">
+<h3>Gedruckt heute</h3>
+<div id="admin-printed-today">0</div>
+</div>
+
+<div class="card">
+<h3>Filamentverbrauch</h3>
+<div id="admin-filament">0g</div>
+</div>
+
+</div>
+
+<div style="margin-top:24px;">
+
+<h3>Aufträge verwalten</h3>
+
+<div id="admin-orders-list"></div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function openAdminLogin(){
+
+  const p = prompt("Admin Passwort:");
+
+  if(p === "egn"){
+
+    isAdmin = true;
+
+    document.getElementById(
+      'admin-panel'
+    ).style.display = 'block';
+
+    renderAdminOrders();
+
+    showToast("Admin Modus aktiviert.");
+  }
+}
+
+function renderAdminOrders(){
+
+  const orders = getOrders();
+
+  const wrap =
+  document.getElementById(
+    'admin-orders-list'
+  );
+
+  wrap.innerHTML = orders.map(o=>`
+
+<div style="
+border:1px solid #ddd;
+padding:12px;
+border-radius:8px;
+margin-bottom:12px;
+">
+
+<div style="
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+">
+
+<b>${o.id}</b>
+
+<select onchange="updateOrderStatus('${o.id}',this.value)">
+
+<option>Eingegangen</option>
+<option>In Bearbeitung</option>
+<option>Gedruckt</option>
+<option>Fertig</option>
+<option>Abgeholt</option>
+
+</select>
+
+</div>
+
+<div>${o.desc}</div>
+
+</div>
+
+`).join('');
+}
+
+function updateOrderStatus(id,status){
+
+  const orders = getOrders();
+
+  const order = orders.find(o=>o.id===id);
+
+  if(order){
+
+    order.status = status;
+
+    saveOrders(orders);
+
+    showToast("Status aktualisiert.");
+  }
+}
+
+</script>
+
+<!-- =========================
+9. VERBESSERTE DATENSTRUKTUR
+========================= -->
+
+<script>
+
+const orderObject = {
+
+  id: 'O-2041',
+
+  type: 'print',
+
+  user: {
+    name: '',
+    class: '',
+    email: ''
+  },
+
+  material: '',
+
+  color: '',
+
+  infill: 20,
+
+  weight: 0,
+
+  price: 0,
+
+  status: 'Eingegangen',
+
+  notes: '',
+
+  createdAt: Date.now()
+};
+
+</script>
+
+<!-- =========================
+10. ERWEITERTE NAVIGATION
+========================= -->
+
+<script>
+
+function switchMainTab(tab){
+
+  document.getElementById(
+    'section-order'
+  ).style.display =
+  tab === 'order' ? 'block':'none';
+
+  document.getElementById(
+    'section-db'
+  ).style.display =
+  tab === 'db' ? 'block':'none';
+
+  document.getElementById(
+    'section-upload'
+  ).style.display =
+  tab === 'upload' ? 'block':'none';
+}
+
+</script>
