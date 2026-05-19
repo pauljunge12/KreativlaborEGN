@@ -1,152 +1,194 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
+<meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Kreativlabor EGN</title>
 
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
-
 <style>
-:root{
---bg:#f3f4f6;
---card:#fff;
---border:#e5e7eb;
---text:#111827;
---muted:#6b7280;
---accent:#2563eb;
+body{
+margin:0;
+font-family:Arial, sans-serif;
+background:#f3f4f6;
+color:#111;
 }
 
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text)}
-.container{max-width:1200px;margin:auto;padding:24px}
-.card{background:white;border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:20px}
-input,textarea,select{
-width:100%;padding:12px;border:1px solid #d1d5db;border-radius:12px;margin-top:6px;margin-bottom:14px;
+header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:16px 24px;
+background:#fff;
+border-bottom:1px solid #ddd;
+position:sticky;
+top:0;
 }
-button{cursor:pointer;border:none;border-radius:12px;font-weight:700;padding:12px 16px}
-.btn{background:var(--accent);color:white}
-.btn2{background:#e5e7eb}
+
+.container{padding:24px;max-width:1100px;margin:auto}
+
+.card{
+background:#fff;
+border:1px solid #ddd;
+border-radius:16px;
+padding:20px;
+margin-bottom:20px;
+}
+
+input,textarea,select{
+width:100%;
+padding:12px;
+margin-top:6px;
+border-radius:10px;
+border:1px solid #ccc;
+}
+
+button{
+padding:10px 14px;
+border:none;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+}
+
+.btn{background:#2563eb;color:#fff}
+.btn2{background:#eee}
+
+.tabs button{
+margin-right:10px;
+padding:10px 14px;
+border-radius:10px;
+border:none;
+cursor:pointer;
+}
+
+.active{background:#2563eb;color:#fff}
+
 .hidden{display:none}
 
-.status{
-font-size:.75rem;padding:6px 10px;border-radius:999px;font-weight:700;
-}
-.s1{background:#dbeafe;color:#1d4ed8}
-.s2{background:#fef3c7;color:#b45309}
-.s3{background:#ede9fe;color:#7c3aed}
-.s4{background:#dcfce7;color:#15803d}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media(max-width:700px){.grid{grid-template-columns:1fr}}
+
+.login{
+position:fixed;
+inset:0;
+display:flex;
+justify-content:center;
+align-items:center;
+background:#f3f4f6;
+}
+
+.login-box{
+background:#fff;
+padding:30px;
+border-radius:20px;
+width:90%;
+max-width:420px;
+border:1px solid #ddd;
+}
 </style>
 </head>
 
 <body>
 
 <!-- LOGIN -->
-<div id="login" style="position:fixed;inset:0;background:#f3f4f6;display:flex;justify-content:center;align-items:center;z-index:9999">
-<div class="card" style="width:420px">
-<h2 style="font-size:1.4rem;font-weight:800;margin-bottom:10px;">Kreativlabor EGN</h2>
-<p style="color:#6b7280;margin-bottom:16px;">Login mit Schul-E-Mail</p>
-
+<div id="login" class="login">
+<div class="login-box">
+<h2>Kreativlabor EGN Login</h2>
 <input id="name" placeholder="Name">
-<input id="email" placeholder="Schul-E-Mail">
-
-<button class="btn" style="width:100%" onclick="login()">Starten</button>
+<input id="mail" placeholder="E-Mail">
+<button class="btn" onclick="login()">Starten</button>
 </div>
 </div>
 
-<!-- HEADER -->
-<header style="background:white;border-bottom:1px solid #e5e7eb;padding:14px 24px;display:flex;justify-content:space-between;position:sticky;top:0;z-index:10">
-<div style="font-weight:800;font-size:1.2rem;">Kreativlabor EGN</div>
-
-<div style="display:flex;gap:10px;align-items:center">
-<div style="background:#eff6ff;color:#2563eb;padding:6px 12px;border-radius:999px;font-weight:700">
-⭐ <span id="points">0</span>
-</div>
-
-<button class="btn2" onclick="switchTab('order')">Aufträge</button>
-<button class="btn2" onclick="switchTab('db')">Datenbank</button>
-<button class="btn2" id="adminBtn" style="display:none" onclick="switchTab('admin')">Admin</button>
-<button class="btn" onclick="adminLogin()">🔑</button>
+<header>
+<div><b>Kreativlabor EGN</b></div>
+<div>
+⭐ Punkte: <span id="points">0</span>
+<button class="btn2" onclick="adminLogin()">Admin</button>
 </div>
 </header>
 
-<div class="container">
+<div class="container hidden" id="app">
 
-<!-- ================= ORDER ================= -->
+<!-- NAV -->
+<div class="tabs">
+<button class="active" onclick="tab('order')">Aufträge</button>
+<button onclick="tab('db')">Datenbank</button>
+<button id="adminTab" class="hidden" onclick="tab('admin')">Admin</button>
+</div>
+
+<!-- ORDER -->
 <div id="order">
 
 <div class="card">
-<h2 style="font-size:1.2rem;font-weight:800">Auftrag erstellen</h2>
-
-<div class="grid">
-
-<div>
 <h3>Idee / Reparatur</h3>
-<input id="i_name" placeholder="Name">
-<input id="i_class" placeholder="Klasse">
-<input type="file" id="i_file">
-<textarea id="i_desc" placeholder="Beschreibung"></textarea>
+
+<input id="idea_name" placeholder="Name">
+<input id="idea_class" placeholder="Klasse">
+<input type="file" id="idea_sketch">
+<textarea id="idea_desc" placeholder="Beschreibung"></textarea>
+
 <button class="btn" onclick="sendIdea()">Senden</button>
 </div>
 
-<div>
+<div class="card">
 <h3>STL Druck</h3>
-<input id="s_name" placeholder="Name">
-<input id="s_class" placeholder="Klasse">
 
-<select id="pointsMode">
+<input id="stl_name" placeholder="Name">
+<input id="stl_class" placeholder="Klasse">
+
+<select id="points_use">
 <option value="none">Keine Punkte</option>
 <option value="discount">10% Rabatt (50 Punkte)</option>
-<option value="free">Freidruck (250 Punkte)</option>
+<option value="free">Gratis Druck (250 Punkte)</option>
 </select>
 
 <input type="file" id="stl_file">
-<textarea id="s_desc"></textarea>
-
-<div style="margin:10px 0;font-weight:800">
-Preis: <span id="price">5 €</span>
-</div>
+<textarea id="stl_desc"></textarea>
 
 <button class="btn" onclick="sendStl()">Bestellen</button>
 </div>
 
-</div>
-</div>
-
-<!-- ORDERS -->
 <div class="card">
-<h2>Deine Aufträge</h2>
+<h3>Meine Aufträge</h3>
 <div id="orders"></div>
 </div>
 
 </div>
 
-<!-- ================= DB ================= -->
+<!-- DB -->
 <div id="db" class="hidden">
 
 <div class="card">
-<h2>Datenbank</h2>
+<h3>Modell hochladen</h3>
 
 <input id="db_title" placeholder="Titel">
-<input type="file" id="db_file">
+<select id="db_cat">
+<option>Allgemein</option>
+<option>Schule</option>
+<option>Repair</option>
+</select>
+
 <textarea id="db_desc"></textarea>
+<input type="file" id="db_file">
 
-<button class="btn" onclick="upload()">Upload</button>
+<button class="btn" onclick="uploadModel()">Upload</button>
 </div>
 
-<div id="db_list"></div>
+<div class="card">
+<h3>Modelle</h3>
+<div id="models"></div>
+</div>
 
 </div>
 
-<!-- ================= ADMIN ================= -->
+<!-- ADMIN -->
 <div id="admin" class="hidden">
 
 <div class="card">
-<h2>Admin Dashboard</h2>
-<div id="admin_list"></div>
+<h3>Admin Dashboard</h3>
+<div id="admin_orders"></div>
 </div>
 
 </div>
@@ -155,191 +197,164 @@ Preis: <span id="price">5 €</span>
 
 <script>
 
+let logged=false;
+let admin=false;
+
 let orders=[];
 let models=[];
 let points=0;
-let isAdmin=false;
 
-const ADMIN_PASS="kreativlabor2026";
-
-window.onload=()=>{
-load();
-renderOrders();
-renderModels();
-updatePoints();
-};
-
+/* LOGIN */
 function login(){
+let n=name.value;
+let m=mail.value;
+if(!n||!m)return alert("Fehler");
+localStorage.user=n;
 document.getElementById("login").style.display="none";
+document.getElementById("app").classList.remove("hidden");
+load();
 }
 
-function switchTab(tab){
-["order","db","admin"].forEach(t=>{
-document.getElementById(t).classList.add("hidden");
-});
-document.getElementById(tab).classList.remove("hidden");
+/* TAB */
+function tab(t){
+order.classList.add("hidden");
+db.classList.add("hidden");
+admin.classList.add("hidden");
 
-if(tab==="admin")renderAdmin();
+if(t==="order")order.classList.remove("hidden");
+if(t==="db")db.classList.remove("hidden");
+if(t==="admin")admin.classList.remove("hidden");
+}
+
+/* DATA */
+function save(){
+localStorage.orders=JSON.stringify(orders);
+localStorage.models=JSON.stringify(models);
+localStorage.points=points;
 }
 
 function load(){
-orders=JSON.parse(localStorage.getItem("o")||"[]");
-models=JSON.parse(localStorage.getItem("m")||"[]");
-points=parseInt(localStorage.getItem("p")||0);
+orders=JSON.parse(localStorage.orders||"[]");
+models=JSON.parse(localStorage.models||"[]");
+points=parseInt(localStorage.points||"0");
+render();
 }
 
-function save(){
-localStorage.setItem("o",JSON.stringify(orders));
-localStorage.setItem("m",JSON.stringify(models));
-localStorage.setItem("p",points);
-}
-
-/* ================= POINTS ================= */
-
-function updatePoints(){
-document.getElementById("points").innerText=points;
-}
-
-/* ================= IDEE ================= */
-
-function sendIdea(){
-
-orders.unshift({
-id:Date.now(),
-type:"Idee",
-name:document.getElementById("i_name").value,
-class:document.getElementById("i_class").value,
-desc:document.getElementById("i_desc").value,
-file:document.getElementById("i_file").files[0]?.name||"",
-status:"Eingegangen"
-});
-
+/* POINTS SAFE */
+function addPoints(v){
+points=Math.max(0,points+v);
 save();
-renderOrders();
-alert("gesendet");
+render();
 }
 
-/* ================= STL ================= */
+/* IDEE */
+function sendIdea(){
+orders.unshift({
+type:"Idee",
+name:idea_name.value,
+desc:idea_desc.value,
+status:"Neu"
+});
+save();render();
+}
 
+/* STL */
 function sendStl(){
 
 let price=5;
 
-let mode=document.getElementById("pointsMode").value;
+let mode=points_use.value;
 
-if(mode==="discount"){
-if(points<50){alert("Zu wenig Punkte");return;}
+if(mode==="discount"&&points>=50){
 points-=50;
-price=Math.round(price*0.9);
+price*=0.9;
 }
 
 if(mode==="free"){
-if(points<250){alert("Zu wenig Punkte");return;}
+if(points<250)return alert("Zu wenig Punkte");
 points-=250;
 price=0;
 }
 
-points+=10;
-
 orders.unshift({
-id:Date.now(),
 type:"STL",
-name:document.getElementById("s_name").value,
-class:document.getElementById("s_class").value,
-desc:document.getElementById("s_desc").value,
-file:document.getElementById("stl_file").files[0]?.name||"",
+name:stl_name.value,
+desc:stl_desc.value,
 price:price,
-status:"Eingegangen"
+status:"Neu"
 });
 
+addPoints(20);
 save();
-updatePoints();
-renderOrders();
+render();
 }
 
-/* ================= DB ================= */
-
-function upload(){
-
+/* MODELS */
+function uploadModel(){
 models.unshift({
-title:document.getElementById("db_title").value,
-desc:document.getElementById("db_desc").value,
-file:document.getElementById("db_file").files[0]?.name||""
+title:db_title.value,
+desc:db_desc.value
 });
-
-points+=30;
-
+addPoints(40);
 save();
-updatePoints();
-renderModels();
+render();
 }
 
-function renderModels(){
-
-document.getElementById("db_list").innerHTML=
-models.map(m=>`
-<div class="card">
-<b>${m.title}</b><br>
-${m.desc}<br>
-📁 ${m.file}
-</div>
-`).join('');
-}
-
-/* ================= ORDERS ================= */
-
-function renderOrders(){
-
-document.getElementById("orders").innerHTML=
-orders.map(o=>`
-<div class="card">
-<div style="display:flex;justify-content:space-between">
-<b>${o.type}</b>
-<span class="status s1">${o.status}</span>
-</div>
-
-<p>${o.desc}</p>
-
-<small>${o.file||""}</small>
-
-<div style="font-weight:800;color:#2563eb">
-${o.price?o.price+" €":""}
-</div>
-</div>
-`).join('');
-}
-
-/* ================= ADMIN ================= */
-
+/* ADMIN LOGIN */
 function adminLogin(){
-let pw=prompt("Passwort");
-if(pw===ADMIN_PASS){
-isAdmin=true;
-document.getElementById("adminBtn").style.display="inline-block";
-switchTab("admin");
-renderAdmin();
+let pw=prompt("Admin Passwort");
+if(pw==="kreativlabor2026"){
+admin=true;
+document.getElementById("adminTab").classList.remove("hidden");
+alert("Admin OK");
 }
 }
 
-function renderAdmin(){
-
-document.getElementById("admin_list").innerHTML=
-orders.map((o,i)=>`
-<div class="card">
-<b>${o.type}</b>
-
-<p>${o.desc}</p>
-
-<button class="btn" onclick="done(${i})">Erledigt</button>
-</div>
-`).join('');
+/* STATUS */
+function setStatus(i,s){
+orders[i].status=s;
+save();
+render();
 }
 
-function done(i){
+/* DELETE */
+function del(i){
 orders.splice(i,1);
 save();
-renderOrders();
-renderAdmin();
+render();
+}
+
+/* RENDER */
+function render(){
+
+pointsEl.textContent=points;
+
+ordersEl.innerHTML=orders.map((o,i)=>`
+<div class="card">
+<b>${o.type}</b> - ${o.status}
+<p>${o.desc||""}</p>
+${o.price?o.price.toFixed(2)+" €":""}
+<button onclick="setStatus(${i},'Drucken')">Drucken</button>
+<button onclick="setStatus(${i},'Fertig')">Fertig</button>
+<button onclick="del(${i})">Entfernen</button>
+</div>
+`).join("");
+
+modelsEl.innerHTML=models.map(m=>`
+<div class="card">
+<b>${m.title}</b>
+<p>${m.desc}</p>
+</div>
+`).join("");
+
+admin_orders.innerHTML=orders.map((o,i)=>`
+<div class="card">
+<b>${o.type}</b>
+<p>${o.status}</p>
+<button onclick="setStatus(${i},'Drucken')">Drucken</button>
+<button onclick="setStatus(${i},'Fertig')">Fertig</button>
+</div>
+`).join("");
 }
 
 </script>
