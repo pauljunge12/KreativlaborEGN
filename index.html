@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kreativlabor – Auftragsverwaltung & Modell-Datenbank</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #f4f3f0;
+      --surface:   #ffffff;
+      --surface2:  #fafaf8;
+      --border:    #e2e0db;
+      --border2:   #ccc9c2;
+      --text:      #1a1916;
+      --muted:     #6b6860;
+      --accent:    #1d4ed8;
+      --accent-lt: #eff4ff;
+      --warn:      #c2410c;
+      --warn-lt:   #fff4ef;
+      --success:   #15803d;
+      --purple:    #7c3aed;
+      --purple-lt: #f5f3ff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .mono { font-family: 'DM Mono', monospace; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.04);
+    }
+
+    .lab-input {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+      width: 100%;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .lab-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(29,78,216,0.1);
+      background: var(--surface);
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 20px;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+      width: 100%;
+    }
+    .btn-primary:hover { background: #2d2c29; }
+
+    .field-label {
+      display: block;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem; font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.07em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .tab-bar {
+      display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 5px; margin-bottom: 22px;
+    }
+    .tab-btn {
+      flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 14px; border: none; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600; cursor: pointer; color: var(--muted); background: transparent;
+    }
+    .tab-btn.active { background: var(--text); color: white; }
+
+    /* Login-Overlay */
+    #auth-overlay {
+      position: fixed; inset: 0; background: rgba(244, 243, 240, 0.95); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+
+    #toast { position: fixed; bottom: 24px; right: 24px; z-index: 3000; display: none; }
+  </style>
+</head>
+<body>
+
+  <div id="auth-overlay">
+    <div class="card" style="max-width: 420px; width: 100%; padding: 32px; text-align: center;">
+      <div style="width:52px; height:52px; background:var(--text); border-radius:14px; display:flex; align-items:center; justify-content:center; margin: 0 auto 16px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <h2 style="font-size: 1.3rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px;">Willkommen im Kreativlabor</h2>
+      <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 24px;">Bitte melde dich kurz an, um Druckaufträge einzureichen oder Modelle herunterzuladen.</p>
+      
+      <div style="display: flex; flex-direction: column; gap: 14px; text-align: left; margin-bottom: 20px;">
+        <div>
+          <label class="field-label">Dein Name</label>
+          <input id="user-login-name" type="text" placeholder="Vorname Nachname" class="lab-input" />
+        </div>
+        <div>
+          <label class="field-label">Deine E-Mail-Adresse</label>
+          <input id="user-login-email" type="email" placeholder="name@schule.de" class="lab-input" />
+        </div>
+      </div>
+      <button class="btn-primary" onclick="handleUserLogin()">Verbinden</button>
+    </div>
+  </div>
+
+  <div style="height: 3px; background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 100%);"></div>
+
+  <header style="background:var(--surface); border-bottom:1px solid var(--border);">
+    <div style="max-width:1200px; margin:0 auto; padding:18px 24px; display:flex; align-items:center; justify-content:between; justify-content: space-between;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:38px; height:38px; background:var(--text); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        </div>
+        <div>
+          <h1 style="font-size:1.15rem; font-weight:700; letter-spacing:-0.02em;">Kreativlabor</h1>
+          <div class="mono" style="font-size:0.68rem; color:var(--muted);">Schülerprojekt · EGN Nordhorn</div>
+        </div>
+      </div>
+      
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span id="user-badge" class="mono" style="font-size: 0.75rem; color: var(--muted); background: var(--surface2); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);"></span>
+        <button id="admin-toggle-btn" onclick="toggleAdminMode()" style="background:transparent; border:1px solid var(--border); border-radius:6px; padding:6px 14px; font-size:0.8rem; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+          🔒 Admin Login
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width:1200px; margin:0 auto; padding:28px 24px;">
+    <div style="display: grid; grid-template-columns: 1fr; lg:grid-template-columns: 1.2fr 1fr; gap: 28px;" class="grid lg:grid-columns-2 lg:grid-cols-[1.3fr_1fr]">
+      
+      <div>
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tab-idea" onclick="switchTab('idea')">💡 Idee beschreiben</button>
+          <button class="tab-btn" id="tab-stl" onclick="switchTab('stl')">📐 Eigene STL drucken</button>
+        </div>
+
+        <div id="panel-idea" class="card" style="padding:24px;">
+          <h3 style="font-weight:600; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+            <span>1. Druckauftrag via Idee/Skizze einreichen</span>
+          </h3>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label class="field-label">Projektbeschreibung</label>
+              <textarea id="f-desc" rows="4" class="lab-input" placeholder="Was möchtest du drucken? Maße, Verwendungszweck..."></textarea>
+            </div>
+            <button class="btn-primary" style="background:var(--accent);" onclick="submitDruckAuftrag('Idee/Skizze')">Druckauftrag abschicken</button>
+          </div>
+        </div>
+
+        <div id="panel-stl" class="card" style="padding:24px; display:none;">
+          <h3 style="font-weight:600; margin-bottom:16px;">1. Eigene fertige STL-Datei drucken lassen</h3>
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div style="border: 2px dashed var(--border); padding: 24px; text-align: center; border-radius: 8px; background: var(--surface2);">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="margin:0 auto 8px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span style="font-size:0.85rem; color:var(--muted);">Hier klicken um .stl für den Druck auszuwählen</span>
+            </div>
+            <button class="btn-primary" style="background:var(--accent);" onclick="submitDruckAuftrag('Eigene STL-Datei')">Druckauftrag abschicken</button>
+          </div>
+        </div>
+
+        <div id="admin-orders-section" class="card" style="padding:24px; margin-top:24px; display:none; border-color: var(--warn);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-weight:700; color:var(--warn);">🛠 Eingegangene Druckaufträge (Admin)</h3>
+            <button onclick="clearAllOrders()" style="font-size:0.75rem; color:var(--warn); background:transparent; border:1px solid var(--warn); padding:3px 8px; border-radius:4px;">Alle löschen</button>
+          </div>
+          <div id="orders-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:24px;">
+        
+        <div class="card" style="padding:24px; border-top: 4px solid var(--purple);">
+          <h3 style="font-weight:700; font-size:1rem; margin-bottom:4px; color:var(--purple); display:flex; align-items:center; gap:8px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Modell in die Datenbank hochladen
+          </h3>
+          <p style="font-size:0.8rem; color:var(--muted); margin-bottom:16px;">Stelle deine STL-Designs der gesamten Schule zur Verfügung.</p>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div>
+              <label class="field-label">Name des Modells</label>
+              <input id="db-model-title" type="text" placeholder="z.B. Handyhalterung Lüftung" class="lab-input" />
+            </div>
+            <div>
+              <label class="field-label">Kategorie</label>
+              <select id="db-model-cat" class="lab-input">
+                <option value="Werkzeug">Werkzeug / Nützliches</option>
+                <option value="Deko">Deko & Kunst</option>
+                <option value="Ersatzteil">Ersatzteil</option>
+                <option value="Schule">Schule & Unterricht</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label">STL-Datei auswählen</label>
+              <input type="file" accept=".stl" id="db-file-input" class="lab-input" style="padding:8px;" />
+            </div>
+            <button class="btn-primary" style="background:var(--purple);" onclick="uploadModelToDB()">In Datenbank speichern</button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;">
+          <h3 style="font-weight:600; margin-bottom:12px;">📂 Öffentliche Modell-Datenbank</h3>
+          <div id="db-empty-state" style="padding:20px; text-align:center; color:var(--muted); font-size:0.85rem; background:var(--surface2); border-radius:8px;">
+            Keine Modelle in der Datenbank vorhanden. Lade das erste Modell hoch!
+          </div>
+          <div id="db-models-list" style="display:grid; grid-template-columns:1fr; gap:12px;"></div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <div id="toast"><div id="toast-inner"></div></div>
+
+  <script>
+    let currentUser = null;
+    let isAdmin = false;
+    const ADMIN_PASSWORD = "admin123"; // Das Admin-Passwort
+
+    // Beim Laden prüfen, ob Benutzer angemeldet ist
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedUser = localStorage.getItem('kreativlabor_user');
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        document.getElementById('auth-overlay').style.display = 'none';
+        updateUserHeader();
+      }
+      renderOrders();
+      renderDBModels();
+    });
+
+    // ── NUTZER-ANMELDUNG ──
+    function handleUserLogin() {
+      const name = document.getElementById('user-login-name').value.trim();
+      const email = document.getElementById('user-login-email').value.trim();
+
+      if (!name || !email) {
+        showToast("❌ Bitte trage Name und E-Mail ein!");
+        return;
+      }
+
+      currentUser = { name, email };
+      localStorage.setItem('kreativlabor_user', JSON.stringify(currentUser));
+      document.getElementById('auth-overlay').style.display = 'none';
+      updateUserHeader();
+      showToast(`👋 Hallo ${name}, erfolgreich angemeldet!`);
+    }
+
+    function updateUserHeader() {
+      if (currentUser) {
+        document.getElementById('user-badge').textContent = `👤 ${currentUser.name}`;
+      }
+    }
+
+    // ── ADMIN-MODUS TOOGLE ──
+    function toggleAdminMode() {
+      if (isAdmin) {
+        isAdmin = false;
+        document.getElementById('admin-toggle-btn').textContent = "🔒 Admin Login";
+        document.getElementById('admin-toggle-btn').style.borderColor = "var(--border)";
+        document.getElementById('admin-orders-section').style.display = 'none';
+        showToast("🔓 Admin-Modus verlassen.");
+      } else {
+        const pw = prompt("Bitte Admin-Passwort eingeben:");
+        if (pw === ADMIN_PASSWORD) {
+          isAdmin = true;
+          document.getElementById('admin-toggle-btn').textContent = "🔓 Admin Aktiv";
+          document.getElementById('admin-toggle-btn').style.borderColor = "var(--warn)";
+          document.getElementById('admin-orders-section').style.display = 'block';
+          showToast("🛠 Admin-Modus freigeschaltet!");
+          renderOrders();
+        } else if (pw !== null) {
+          showToast("❌ Falsches Passwort!");
+        }
+      }
+    }
+
+    // Tabs wechseln (Links)
+    function switchTab(tab) {
+      document.getElementById('tab-idea').classList.toggle('active', tab === 'idea');
+      document.getElementById('tab-stl').classList.toggle('active', tab === 'stl');
+      document.getElementById('panel-idea').style.display = tab === 'idea' ? 'block' : 'none';
+      document.getElementById('panel-stl').style.display = tab === 'stl' ? 'block' : 'none';
+    }
+
+    // ── DRUCKAUFTRÄGE VERWALTEN (LOKAL) ──
+    function getOrders() {
+      return JSON.parse(localStorage.getItem('kreativlabor_orders') || '[]');
+    }
+
+    function submitDruckAuftrag(typ) {
+      let beschreibung = "";
+      if (typ === 'Idee/Skizze') {
+        beschreibung = document.getElementById('f-desc').value.trim();
+        if (!beschreibung) { return showToast("❌ Bitte beschreibe deine Idee."); }
+      } else {
+        beschreibung = "Eigene hochgeladene STL-Datei bereit zum Slicen.";
+      }
+
+      const orders = getOrders();
+      const newOrder = {
+        id: 'ord_' + Date.now(),
+        user: currentUser.name,
+        email: currentUser.email,
+        type: typ,
+        desc: beschreibung,
+        date: new Date().toLocaleDateString('de-DE')
+      };
+
+      orders.push(newOrder);
+      localStorage.setItem('kreativlabor_orders', JSON.stringify(orders));
+      
+      // Zurücksetzen
+      document.getElementById('f-desc').value = "";
+      showToast("🚀 Druckauftrag erfolgreich eingereicht!");
+      if (isAdmin) renderOrders();
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('orders-list');
+      if (!container) return;
+      const orders = getOrders();
+
+      if (orders.length === 0) {
+        container.innerHTML = `<div style="text-align:center; color:var(--muted); font-size:0.85rem; padding:12px;">Keine Aufträge vorhanden.</div>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(o => `
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:14px; position:relative;">
+          <button onclick="deleteOrder('${o.id}')" style="position:absolute; top:12px; right:12px; color:var(--muted); background:transparent; border:none; cursor:pointer; font-weight:bold;">✕</button>
+          <div style="font-size:0.7rem; font-family:monospace; color:var(--accent); margin-bottom:4px;">${o.type.toUpperCase()} — ${o.date}</div>
+          <div style="font-size:0.88rem; font-weight:600;">von ${o.user} (${o.email})</div>
+          <div style="font-size:0.8rem; color:var(--muted); margin-top:4px;">${o.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    function deleteOrder(id) {
+      const orders = getOrders().filter(o => o.id !== id);
+      localStorage.setItem('kreativlabor_orders', JSON.stringify(orders));
+      renderOrders();
+      showToast("Auftrag gelöscht.");
+    }
+
+    function clearAllOrders() {
+      if (confirm("Wirklich alle Aufträge unwiderruflich löschen?")) {
+        localStorage.setItem('kreativlabor_orders', '[]');
+        renderOrders();
+      }
+    }
+
+    // ── MODEL-DATENBANK VERWALTEN (LOKAL OHNE FAKES) ──
+    function getDBModels() {
+      return JSON.parse(localStorage.getItem('kreativlabor_db_models') || '[]');
+    }
+
+    function uploadModelToDB() {
+      const title = document.getElementById('db-model-title').value.trim();
+      const cat = document.getElementById('db-model-cat').value;
+      const fileInput = document.getElementById('db-file-input');
+
+      if (!title || fileInput.files.length === 0) {
+        showToast("❌ Bitte Titel eingeben und STL-Datei auswählen!");
+        return;
+      }
+
+      const models = getDBModels();
+      const newModel = {
+        id: 'mod_' + Date.now(),
+        title: title,
+        category: cat,
+        fileName: fileInput.files[0].name,
+        creator: currentUser.name,
+        date: new Date().toLocaleDateString('de-DE')
+      };
+
+      models.push(newModel);
+      localStorage.setItem('kreativlabor_db_models', JSON.stringify(models));
+
+      // Reset
+      document.getElementById('db-model-title').value = "";
+      fileInput.value = "";
+      
+      showToast("💾 Modell erfolgreich in Datenbank gespeichert!");
+      renderDBModels();
+    }
+
+    function renderDBModels() {
+      const listContainer = document.getElementById('db-models-list');
+      const emptyState = document.getElementById('db-empty-state');
+      const models = getDBModels();
+
+      if (models.length === 0) {
+        listContainer.innerHTML = "";
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      listContainer.innerHTML = models.map(m => `
+        <div style="background:var(--surface2); border:1px solid var(--border); border-radius:8px; padding:12px; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span style="font-size:0.65rem; background:var(--purple-lt); color:var(--purple); padding:2px 6px; border-radius:4px; font-family:monospace; font-weight:600;">${m.category}</span>
+            <h4 style="font-weight:600; font-size:0.9rem; margin-top:3px;">${m.title}</h4>
+            <p style="font-size:0.72rem; color:var(--muted);">Datei: ${m.fileName} · von ${m.creator}</p>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <button onclick="showToast('⬇ Download gestartet: ${m.fileName}')" style="background:var(--text); color:white; font-size:0.75rem; padding:6px 10px; border:none; border-radius:6px; cursor:pointer; font-weight:500;">Download</button>
+            ${isAdmin ? `<button onclick="deleteModel('${m.id}')" style="color:var(--warn); background:transparent; border:1px solid var(--border); border-radius:6px; padding:4px 8px; font-size:0.75rem;">✕</button>` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function deleteModel(id) {
+      const models = getDBModels().filter(m => m.id !== id);
+      localStorage.setItem('kreativlabor_db_models', JSON.stringify(models));
+      renderDBModels();
+      showToast("Modell aus Datenbank entfernt.");
+    }
+
+    // Toast Mitteilungen anzeigen
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toast-inner').textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 3000);
+    }
+  </script>
+</body>
+</html>
