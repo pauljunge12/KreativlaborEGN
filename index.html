@@ -552,7 +552,8 @@
     const KEY = 'kreativlabor_v2';
     const DB_KEY = 'kreativlabor_modeldb';
     const POINTS_KEY = 'kreativlabor_points';
-    const ADMIN_PW = 'kreativlabor2025';
+    const ADMIN_HASH = '6e8218fc1a8aced2131c5236c7872bc3475d37d6aeccd9591e01b6a2dbbb0ad6';
+    async function sha256(msg){const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(msg));return[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');}
     let isAdmin = false;
 
     // ── EmailJS / Send ────────────────────────────────────
@@ -622,8 +623,8 @@
       if(filtered.length===0){grid.innerHTML='';empty.style.display='block';return;}
       empty.style.display='none';
       grid.innerHTML = filtered.map(m=>`
-        <div class="model-card" onclick="openModelModal('${m.id}')">
-          ${m.photo ? `<img src="${m.photo}" style="width:100%;height:160px;object-fit:cover;"/>` : `<div style="width:100%;height:160px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📦</div>`}
+        <div class="model-card" onclick="openModelModal('${escAttr(m.id)}')">
+          ${m.photo ? `<img src="${escAttr(m.photo)}" style="width:100%;height:160px;object-fit:cover;"/>` : `<div style="width:100%;height:160px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;">📦</div>`}
           <div style="padding:12px;">
             <div style="font-weight:600;font-size:.9rem;margin-bottom:4px;">${esc(m.title)}</div>
             <div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;">${esc(m.desc||'').substring(0,60)}${(m.desc||'').length>60?'…':''}</div>
@@ -1612,12 +1613,13 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
     // ── Admin ─────────────────────────────────────────────
     function openAdminLogin(){document.getElementById('admin-modal').style.display='flex';setTimeout(()=>document.getElementById('admin-pw-input').focus(),100);}
     function closeAdminModal(){document.getElementById('admin-modal').style.display='none';document.getElementById('admin-pw-input').value='';document.getElementById('admin-pw-error').style.display='none';}
-    function adminLogin(){const pw=document.getElementById('admin-pw-input').value;if(pw===ADMIN_PW){isAdmin=true;closeAdminModal();document.getElementById('admin-panel').style.display='block';document.getElementById('admin-login-btn').style.display='none';renderOrders();}else{document.getElementById('admin-pw-error').textContent='Falsches Passwort.';document.getElementById('admin-pw-error').style.display='block';}}
+    async function adminLogin(){const pw=document.getElementById('admin-pw-input').value;const hash=await sha256(pw);if(hash===ADMIN_HASH){isAdmin=true;closeAdminModal();document.getElementById('admin-panel').style.display='block';document.getElementById('admin-login-btn').style.display='none';renderOrders();}else{document.getElementById('admin-pw-error').textContent='Falsches Passwort.';document.getElementById('admin-pw-error').style.display='block';}}
     function adminLogout(){isAdmin=false;document.getElementById('admin-panel').style.display='none';document.getElementById('admin-login-btn').style.display='block';}
 
     // ── Orders Render ─────────────────────────────────────
     function fmt(ts){return new Date(ts).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});}
     function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+    function escAttr(s){return esc(String(s)).replace(/'/g,'&#39;');}
 
     function updateStats(){const o=getOrders();const t=document.getElementById('stat-total'),p=document.getElementById('stat-prints'),s=document.getElementById('stat-stl');if(t)t.textContent=o.length;if(p)p.textContent=o.filter(x=>x.type==='print'||x.type==='idea').length;if(s)s.textContent=o.filter(x=>x.type==='stl').length;}
 
@@ -1642,7 +1644,7 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
             <div style="display:flex;gap:6px;align-items:center;">
               <span style="font-size:.7rem;font-family:'DM Mono',monospace;padding:3px 8px;border-radius:4px;background:${o.type==='stl'?'var(--purple-lt)':'var(--accent-lt)'};color:${o.type==='stl'?'var(--purple)':'var(--accent)'};">${o.type==='stl'?'STL':'Druck'}</span>
               ${o.price?`<span class="mono" style="font-size:.72rem;color:var(--success);font-weight:600;">${esc(o.price)}</span>`:''}
-              <button onclick="deleteOrder('${o.id}')" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:.7rem;color:var(--muted);">✕</button>
+              <button onclick="deleteOrder('${escAttr(o.id)}')" style="background:transparent;border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-size:.7rem;color:var(--muted);">✕</button>
             </div>
           </div>
           <div style="margin-top:8px;font-size:.8rem;color:var(--muted);line-height:1.5;">${esc(o.desc||'').substring(0,200)}${(o.desc||'').length>200?'…':''}</div>
