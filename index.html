@@ -555,6 +555,140 @@
     const ADMIN_PW = 'kreativlabor2025';
     let isAdmin = false;
 
+    // ── Shared Utilities ──────────────────────────────────
+
+    // --- Form Validation ---
+    function validateCommonFields(fieldMap) {
+      const errs = [];
+      const vals = {};
+      for (const [key, {id, label, minLen, isEmail}] of Object.entries(fieldMap)) {
+        const v = document.getElementById(id).value.trim();
+        vals[key] = v;
+        if (!v) errs.push(`${label} fehlt`);
+        else if (isEmail && !v.includes('@')) errs.push('Gültige E-Mail eingeben');
+        else if (minLen && v.length < minLen) errs.push(`${label} zu kurz (min. ${minLen} Zeichen)`);
+      }
+      return { vals, errs };
+    }
+
+    // --- Discount Manager Factory ---
+    function createDiscountManager(labelElId, containerElId) {
+      let selected = null;
+      return {
+        get selected() { return selected; },
+        select(pct, cost) {
+          if (getPoints() < cost) { showToast(`Nicht genug Punkte (${cost} benötigt)`); return; }
+          const item = SHOP_ITEMS.find(x => x.id === pct && x.cost === cost) || { label: pct };
+          selected = { pct, cost, label: item.label };
+          document.getElementById(labelElId).textContent = item.label + ' aktiviert – ' + cost + ' Punkte werden abgezogen';
+          document.getElementById(containerElId).style.display = 'flex';
+          showToast(`${item.label} ausgewählt!`);
+        },
+        clear() {
+          selected = null;
+          document.getElementById(containerElId).style.display = 'none';
+        },
+        deductPoints() {
+          if (selected) {
+            const p = getPoints() - selected.cost;
+            localStorage.setItem(POINTS_KEY, Math.max(0, p));
+            updatePointsDisplay();
+            updateShopUI();
+          }
+        }
+      };
+    }
+
+    // --- Image Drop Zone Factory ---
+    function createImageDropZone(config) {
+      // config: { zoneId, placeholderId, previewId, imgId, inputId, nameId? }
+      let fileData = null;
+      function handleFile(file) {
+        if (!file || !file.type.startsWith('image/')) return;
+        const r = new FileReader();
+        r.onload = e => {
+          fileData = e.target.result;
+          if (config.imgId) document.getElementById(config.imgId).src = e.target.result;
+          if (config.nameId) document.getElementById(config.nameId).textContent = file.name;
+          document.getElementById(config.placeholderId).style.display = 'none';
+          document.getElementById(config.previewId).style.display = 'block';
+        };
+        r.readAsDataURL(file);
+        return file;
+      }
+      function handleDrop(e) {
+        e.preventDefault();
+        document.getElementById(config.zoneId).classList.remove('dz-over');
+        const f = e.dataTransfer.files[0];
+        if (f) handleFile(f);
+      }
+      function clear(e) {
+        e.stopPropagation();
+        fileData = null;
+        document.getElementById(config.placeholderId).style.display = 'block';
+        document.getElementById(config.previewId).style.display = 'none';
+        if (config.inputId) document.getElementById(config.inputId).value = '';
+      }
+      return { handleFile, handleDrop, clear, getData: () => fileData };
+    }
+
+    // --- Claude API Helper ---
+    async function callClaude(systemPrompt, messages, maxTokens = 600) {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: maxTokens,
+          system: systemPrompt,
+          messages
+        })
+      });
+      const data = await res.json();
+      return data.content.map(b => b.text || '').join('').trim();
+    }
+
+    // --- Email Formatting ---
+    const EMAIL_SEPARATOR = '════════════════════════════════════════';
+    const EMAIL_DIVIDER   = '────────────────────────────────────────';
+    const EMAIL_FOOTER    = `\n${EMAIL_SEPARATOR}\nKreativlabor · EGN · paul.junge@egn-noh.de`;
+
+    function formatEmailSection(title) {
+      return `${EMAIL_DIVIDER}\n  ${title}\n${EMAIL_DIVIDER}\n`;
+    }
+    function formatEmailHeader(title) {
+      return `${EMAIL_SEPARATOR}\n  ${title}\n${EMAIL_SEPARATOR}\n`;
+    }
+
+    // --- Shape Builder Registry ---
+    const SHAPE_BUILDERS = {
+      box:        (n,ni) => ({ geo: buildBox(n('w',40),n('d',40),n('h',40)), desc: `Quader` }),
+      cylinder:   (n,ni) => ({ geo: buildCylinder(n('r',20),n('h',40),ni('segments',64)), desc: `Zylinder` }),
+      tube:       (n,ni) => { const ro=n('rOuter',20),ri=Math.min(n('rInner',14),ro-1.5); return { geo: buildTube(ro,ri,n('h',40),ni('segments',64)), desc: `Rohr` }; },
+      sphere:     (n,ni) => ({ geo: buildSphere(n('r',25),ni('slices',48),ni('stacks',32)), desc: `Kugel` }),
+      cone:       (n,ni) => ({ geo: buildCone(n('r',20),n('h',40),ni('segments',64)), desc: `Kegel` }),
+      torus:      (n,ni) => ({ geo: buildTorus(n('R',30),n('r',8),ni('segments',48),ni('tube',24)), desc: `Torus` }),
+      star:       (n,ni) => ({ geo: buildStar(n('outerR',30),n('innerR',13),n('h',8),ni('pts',5,3,12)), desc: `Stern` }),
+      gear:       (n,ni) => ({ geo: buildGear(n('r',25),n('h',8),ni('teeth',12,6,32),n('r',25)*0.14), desc: `Zahnrad` }),
+      hex:        (n,ni) => ({ geo: buildHexPrism(n('r',12),n('h',8)), desc: `Sechskant` }),
+      vase:       (n,ni) => ({ geo: buildVase(n('rBase',35),n('rTop',24,2),n('h',110),n('wall',3,1.5,20),ni('waves',0,0,16),n('waveAmp',3,0,15),n('twist',0,0,360),ni('segments',72),ni('stacks',60)), desc: `Vase` }),
+      flowerpot:  (n,ni) => ({ geo: buildVase(n('r',40),n('r',40)*1.12,n('h',80),n('wall',3.5,1.5,20),0,0,0), desc: `Blumentopf` }),
+      cup:        (n,ni) => ({ geo: buildVase(n('r',35),n('r',35)*1.04,n('h',80),n('wall',3,1.5,15),0,0,0), desc: `Becher` }),
+      openbox:    (n,ni) => ({ geo: buildOpenBox(n('w',80),n('d',60),n('h',40),n('wall',2.5,1,15)), desc: `Offene Box` }),
+      phonestand: (n,ni) => ({ geo: buildPhoneStand(n('w',80),n('d',55,20),n('baseH',6,2),n('backH',110,20),n('lipH',12,3),n('wall',5,2,15)), desc: `Handyständer` }),
+      keychain:   (n,ni) => ({ geo: buildKeychain(n('w',42),n('d',18),n('h',4,1,15)), desc: `Schlüsselanhänger` }),
+      hook:       (n,ni) => ({ geo: buildHook(n('w',40),n('armL',40,10),n('wallH',55,15),n('t',6,2,20)), desc: `Wandhaken` }),
+      cableclip:  (n,ni) => ({ geo: buildCableClip(n('cableD',8),n('wall',3,1.5,10)), desc: `Kabelclip` }),
+      bookmark:   (n,ni) => ({ geo: buildBookmark(n('w',22),n('h',80),n('t',2,1,8)), desc: `Lesezeichen` }),
+      nametag:    (n,ni) => ({ geo: buildNameTag(n('w',80),n('d',50),n('h',3,1,15)), desc: `Namensschild` }),
+      penholder:  (n,ni) => ({ geo: buildPenHolder(n('r',35),n('h',100),n('wall',4,1.5,20)), desc: `Stiftehalter` }),
+      lshape:     (n,ni) => { const w=n('w',50),d=n('d',40),h=n('h',5),tw=Math.max(5,w*0.28),td=Math.max(5,d*0.28); return { geo: buildBox(tw,d,h)+buildBox(w-tw,td,h,tw,0,0), desc: `L-Winkel` }; },
+    };
+
     // ── EmailJS / Send ────────────────────────────────────
     // EmailJS fallback für GitHub Pages
     const EMAILJS_PUBLIC_KEY  = 'Qk24mzDrI1FOc0Aw7';
@@ -709,21 +843,24 @@
       return new Blob([arr],{type:mime});
     }
 
-    // ── Image helpers ─────────────────────────────────────
+    // ── Image helpers (using shared createImageDropZone) ──
     let imageFile = null;
-    let modelPhotoData = null;
 
-    function handleFileSelect(file){if(!file||!file.type.startsWith('image/'))return;imageFile=file;const r=new FileReader();r.onload=e=>{document.getElementById('dz-img').src=e.target.result;document.getElementById('dz-name').textContent=file.name;document.getElementById('dz-placeholder').style.display='none';document.getElementById('dz-preview').style.display='block';};r.readAsDataURL(file);}
-    function handleDrop(e){e.preventDefault();document.getElementById('drop-zone').classList.remove('dz-over');const f=e.dataTransfer.files[0];if(f)handleFileSelect(f);}
-    function clearImage(e){e.stopPropagation();imageFile=null;document.getElementById('dz-placeholder').style.display='block';document.getElementById('dz-preview').style.display='none';document.getElementById('f-image').value='';}
+    const ideaImageZone = createImageDropZone({
+      zoneId: 'drop-zone', placeholderId: 'dz-placeholder', previewId: 'dz-preview',
+      imgId: 'dz-img', inputId: 'f-image', nameId: 'dz-name'
+    });
+    function handleFileSelect(file) { imageFile = file; ideaImageZone.handleFile(file); }
+    function handleDrop(e) { ideaImageZone.handleDrop(e); }
+    function clearImage(e) { imageFile = null; ideaImageZone.clear(e); }
 
-    function handleModelPhoto(file){if(!file||!file.type.startsWith('image/'))return;const r=new FileReader();r.onload=e=>{modelPhotoData=e.target.result;document.getElementById('model-photo-img').src=e.target.result;document.getElementById('model-photo-placeholder').style.display='none';document.getElementById('model-photo-preview').style.display='block';};r.readAsDataURL(file);}
-    function handleModelPhotoDrop(e){e.preventDefault();document.getElementById('model-photo-zone').classList.remove('dz-over');const f=e.dataTransfer.files[0];if(f)handleModelPhoto(f);}
-    function clearModelPhoto(e){e.stopPropagation();modelPhotoData=null;document.getElementById('model-photo-placeholder').style.display='block';document.getElementById('model-photo-preview').style.display='none';document.getElementById('model-photo-input').value='';}
-
-    function handleDbPhoto(file){if(!file||!file.type.startsWith('image/'))return;const r=new FileReader();r.onload=e=>{document.getElementById('db-photo-img').src=e.target.result;document.getElementById('db-photo-placeholder').style.display='none';document.getElementById('db-photo-preview').style.display='block';};r.readAsDataURL(file);}
-    function handleDbPhotoDrop(e){e.preventDefault();document.getElementById('db-photo-zone').classList.remove('dz-over');const f=e.dataTransfer.files[0];if(f)handleDbPhoto(f);}
-    function clearDbPhoto(e){e.stopPropagation();document.getElementById('db-photo-placeholder').style.display='block';document.getElementById('db-photo-preview').style.display='none';document.getElementById('db-photo-input').value='';}
+    const dbPhotoZone = createImageDropZone({
+      zoneId: 'db-photo-zone', placeholderId: 'db-photo-placeholder', previewId: 'db-photo-preview',
+      imgId: 'db-photo-img', inputId: 'db-photo-input'
+    });
+    function handleDbPhoto(file) { dbPhotoZone.handleFile(file); }
+    function handleDbPhotoDrop(e) { dbPhotoZone.handleDrop(e); }
+    function clearDbPhoto(e) { dbPhotoZone.clear(e); }
 
     function toggleDbFields(){const checked=document.getElementById('add-to-db').checked;document.getElementById('db-fields').style.display=checked?'flex':'none';}
 
@@ -776,33 +913,30 @@
       const errEl=document.getElementById('form-error');
       const btn=document.querySelector('#panel-idea .btn-primary');
       errEl.style.display='none';
-      const name=document.getElementById('f-name').value.trim();
-      const klass=document.getElementById('f-class').value.trim();
-      const email=document.getElementById('f-email').value.trim();
-      const desc=document.getElementById('f-desc').value.trim();
+      const { vals, errs } = validateCommonFields({
+        name:  { id: 'f-name',  label: 'Name' },
+        klass: { id: 'f-class', label: 'Klasse' },
+        email: { id: 'f-email', label: 'E-Mail', isEmail: true },
+        desc:  { id: 'f-desc',  label: 'Beschreibung', minLen: 10 }
+      });
       const type=document.getElementById('f-type')?.value||'print';
-      const errs=[];
-      if(!name)errs.push('Name fehlt');
-      if(!klass)errs.push('Klasse fehlt');
-      if(!email||!email.includes('@'))errs.push('Gültige E-Mail eingeben');
-      if(!desc||desc.length<10)errs.push('Beschreibung zu kurz (min. 10 Zeichen)');
       if(errs.length){errEl.innerHTML='• '+errs.join('<br>• ');errEl.style.display='block';return;}
       const nachricht=
-        `════════════════════════════════════════\n  NEUER DRUCKAUFTRAG – KREATIVLABOR EGN\n════════════════════════════════════════\n`+
-        `Name:     ${name}\nKlasse:   ${klass}\nE-Mail:   ${email}\nArt:      ${type==='idea'?'Ideenauftrag':'Druckauftrag'}\n`+
-        `────────────────────────────────────────\n  BESCHREIBUNG\n────────────────────────────────────────\n${desc}`+
-        applyDiscount(selectedDiscount,'')+
-        `\n════════════════════════════════════════\nKreativlabor · EGN · paul.junge@egn-noh.de`;
+        formatEmailHeader('NEUER DRUCKAUFTRAG – KREATIVLABOR EGN')+
+        `Name:     ${vals.name}\nKlasse:   ${vals.klass}\nE-Mail:   ${vals.email}\nArt:      ${type==='idea'?'Ideenauftrag':'Druckauftrag'}\n`+
+        formatEmailSection('BESCHREIBUNG')+vals.desc+
+        applyDiscount(ideaDiscountMgr.selected,'')+
+        EMAIL_FOOTER;
       btn.disabled=true;btn.textContent='Wird gesendet …';
       try{
-        await sendEmail(`[Kreativlabor] Neuer Auftrag – ${name}, Klasse ${klass}`,nachricht,email);
+        await sendEmail(`[Kreativlabor] Neuer Auftrag – ${vals.name}, Klasse ${vals.klass}`,nachricht,vals.email);
         const orders=getOrders();
-        orders.push({id:crypto.randomUUID(),ts:Date.now(),name,klasse:klass,email,type,desc});
+        orders.push({id:crypto.randomUUID(),ts:Date.now(),name:vals.name,klasse:vals.klass,email:vals.email,type,desc:vals.desc});
         saveOrders(orders);
         ['f-name','f-class','f-email','f-desc'].forEach(id=>document.getElementById(id).value='');
         clearImage({stopPropagation:()=>{}});
-        if(selectedDiscount){const p=getPoints()-selectedDiscount.cost;localStorage.setItem(POINTS_KEY,Math.max(0,p));updatePointsDisplay();updateShopUI();}
-        clearDiscount();
+        ideaDiscountMgr.deductPoints();
+        ideaDiscountMgr.clear();
         renderOrders();
         showToast('✓ Auftrag erfolgreich gesendet!');
       }catch(err){
@@ -816,34 +950,32 @@
       const errEl=document.getElementById('stl-form-error');
       const btn=document.querySelector('#panel-stl .btn-primary');
       errEl.style.display='none';
-      const name=document.getElementById('stl-name').value.trim();
-      const klass=document.getElementById('stl-class').value.trim();
-      const email=document.getElementById('stl-email').value.trim();
+      const { vals, errs } = validateCommonFields({
+        name:  { id: 'stl-name',  label: 'Name' },
+        klass: { id: 'stl-class', label: 'Klasse' },
+        email: { id: 'stl-email', label: 'E-Mail', isEmail: true }
+      });
       const mat=document.getElementById('stl-material').value;
       const color=document.getElementById('stl-color').value;
       const count=document.getElementById('stl-count').value||'1';
       const infill=document.getElementById('stl-infill').value||'20';
       const notes=document.getElementById('stl-notes').value.trim();
-      const errs=[];
-      if(!name)errs.push('Name fehlt');
-      if(!klass)errs.push('Klasse fehlt');
-      if(!email||!email.includes('@'))errs.push('Gültige E-Mail eingeben');
       if(!stlFile)errs.push('Keine STL-Datei ausgewählt');
       if(!mat)errs.push('Material auswählen');
       if(!color)errs.push('Farbe auswählen');
       if(errs.length){errEl.innerHTML='• '+errs.join('<br>• ');errEl.style.display='block';return;}
       const nachricht=
-        `════════════════════════════════════════\n  NEUER STL-AUFTRAG – KREATIVLABOR EGN\n════════════════════════════════════════\n`+
-        `Name:     ${name}\nKlasse:   ${klass}\nE-Mail:   ${email}\n`+
-        `────────────────────────────────────────\n  DRUCKEINSTELLUNGEN\n────────────────────────────────────────\n`+
+        formatEmailHeader('NEUER STL-AUFTRAG – KREATIVLABOR EGN')+
+        `Name:     ${vals.name}\nKlasse:   ${vals.klass}\nE-Mail:   ${vals.email}\n`+
+        formatEmailSection('DRUCKEINSTELLUNGEN')+
         `STL-Datei: ${stlFile.name}\nMaterial:  ${mat}\nFarbe:     ${color}\nStückzahl: ${count}×\nInfill:    ${infill}%\n`+
         `Preis:     ${priceString()}`+
-        applyDiscount(selectedStlDiscount,priceString())+'\n'+
-        (notes?`────────────────────────────────────────\n  ANMERKUNGEN\n────────────────────────────────────────\n${notes}\n`:'')+
-        `════════════════════════════════════════\nKreativlabor · EGN · paul.junge@egn-noh.de`;
+        applyDiscount(stlDiscountMgr.selected,priceString())+'\n'+
+        (notes?formatEmailSection('ANMERKUNGEN')+notes+'\n':'')+
+        EMAIL_FOOTER;
       btn.disabled=true;btn.textContent='Wird gesendet …';
       try{
-        await sendEmail(`[Kreativlabor] Neuer STL-Auftrag – ${name}, Klasse ${klass}`,nachricht,email,stlFile);
+        await sendEmail(`[Kreativlabor] Neuer STL-Auftrag – ${vals.name}, Klasse ${vals.klass}`,nachricht,vals.email,stlFile);
         // Zur Datenbank hinzufügen?
         if(document.getElementById('add-to-db').checked){
           const title=document.getElementById('model-title').value.trim();
@@ -859,12 +991,12 @@
           }
           const stlData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(stlFile);});
           const models=getModels();
-          models.push({id:crypto.randomUUID(),ts:Date.now(),title,desc,category:cat,uploaderName:name,photo:hasPhoto?dbPhoto:null,stlData,stlName:stlFile.name,downloads:0,prints:0});
+          models.push({id:crypto.randomUUID(),ts:Date.now(),title,desc,category:cat,uploaderName:vals.name,photo:hasPhoto?dbPhoto:null,stlData,stlName:stlFile.name,downloads:0,prints:0});
           saveModels(models);
           showToast('✓ Modell zur Datenbank hinzugefügt!');
         }
         const orders=getOrders();
-        orders.push({id:crypto.randomUUID(),ts:Date.now(),name,klasse:klass,email,type:'stl',price:priceString(),desc:`STL: ${stlFile.name} | ${mat} | ${color} | ${count}× | ${infill}%`});
+        orders.push({id:crypto.randomUUID(),ts:Date.now(),name:vals.name,klasse:vals.klass,email:vals.email,type:'stl',price:priceString(),desc:`STL: ${stlFile.name} | ${mat} | ${color} | ${count}× | ${infill}%`});
         saveOrders(orders);
         ['stl-name','stl-class','stl-email','stl-color','stl-notes','model-title','model-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
         document.getElementById('stl-material').value='';
@@ -878,8 +1010,8 @@
         document.getElementById('db-fields').style.display='none';
         clearDbPhoto({stopPropagation:()=>{}});
         clearStlFile({stopPropagation:()=>{}});
-        if(selectedStlDiscount){const p=getPoints()-selectedStlDiscount.cost;localStorage.setItem(POINTS_KEY,Math.max(0,p));updatePointsDisplay();updateShopUI();}
-        clearStlDiscount();
+        stlDiscountMgr.deductPoints();
+        stlDiscountMgr.clear();
         renderOrders();
         const hint=document.getElementById('stl-success-hint');
         hint.style.display='block';
@@ -903,9 +1035,12 @@
       document.getElementById('ai-btn-text').textContent='Wird erstellt …';
       document.getElementById('ai-btn').disabled=true;
       try{
-        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Du bist ein Designberater für ein Schüler-Kreativlabor. Der Schüler beschreibt eine Idee für ein 3D-Druckobjekt. Erstelle einen kurzen, strukturierten Vorschlag auf Deutsch mit: Objektname, Abmessungen (in mm), empfohlenes Material, besondere Merkmale, und 2-3 Drucktipps. Sei präzise und praxisnah.`,messages:[{role:'user',content:`Idee: ${prompt}`}]})});
-        const data=await res.json();
-        document.getElementById('ai-output').textContent=data.content.map(b=>b.text||'').join('').trim();
+        const text = await callClaude(
+          `Du bist ein Designberater für ein Schüler-Kreativlabor. Der Schüler beschreibt eine Idee für ein 3D-Druckobjekt. Erstelle einen kurzen, strukturierten Vorschlag auf Deutsch mit: Objektname, Abmessungen (in mm), empfohlenes Material, besondere Merkmale, und 2-3 Drucktipps. Sei präzise und praxisnah.`,
+          [{role:'user',content:`Idee: ${prompt}`}],
+          1000
+        );
+        document.getElementById('ai-output').textContent=text;
         document.getElementById('ai-result').style.display='block';
       }catch{document.getElementById('ai-error').textContent='Fehler. Bitte erneut versuchen.';document.getElementById('ai-error').style.display='block';}
       finally{document.getElementById('ai-spinner').style.display='none';document.getElementById('ai-btn-text').textContent='Skizzenvorschlag erstellen';document.getElementById('ai-btn').disabled=false;}
@@ -1024,11 +1159,7 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
 
       try{
         genConvHistory.push({role:'user',content:`3D-Objekt: ${prompt}`});
-        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-          headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:GEN_SYSTEM,messages:genConvHistory})});
-        const data=await res.json();
-        const raw=data.content.map(b=>b.text||'').join('').trim();
+        const raw = await callClaude(GEN_SYSTEM, genConvHistory, 600);
 
         let parsed;
         try{parsed=JSON.parse(raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());}
@@ -1080,11 +1211,7 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
       try{
         const refSys=`${GEN_SYSTEM}\n\nBisherige Parameter: ${JSON.stringify(currentGenParams)}\nPasse NUR die gewünschten Parameter an. Behalte alles andere bei. Gib wieder NUR JSON zurück.`;
         genConvHistory.push({role:'user',content:`Feedback: ${fb}. Parameter anpassen.`});
-        const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-          headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-          body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:refSys,messages:genConvHistory})});
-        const data=await res.json();
-        const raw=data.content.map(b=>b.text||'').join('').trim();
+        const raw = await callClaude(refSys, genConvHistory, 500);
         let parsed;
         try{parsed=JSON.parse(raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());}
         catch{throw new Error('KI-Antwort nicht verarbeitbar.');}
@@ -1109,36 +1236,20 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
       }
     }
 
-    // Dispatches Claude's parsed JSON to the correct geometry builder
+    // Dispatches Claude's parsed JSON to the correct geometry builder (uses shared SHAPE_BUILDERS)
     function buildStlFromKiParams(parsed){
       const p=parsed.params||{};
       const n=(k,def,mn=1,mx=300)=>Math.min(mx,Math.max(mn,parseFloat(p[k])||def));
       const ni=(k,def,mn=3,mx=128)=>Math.round(n(k,def,mn,mx));
-      let geo='',desc=parsed.description||parsed.shape;
+      let geo,desc=parsed.description||parsed.shape;
 
-      switch(parsed.shape){
-        case'box':      geo=buildBox(n('w',40),n('d',40),n('h',40)); break;
-        case'cylinder': geo=buildCylinder(n('r',20),n('h',40),ni('segments',64)); break;
-        case'tube':     {const ro=n('rOuter',20),ri=Math.min(n('rInner',14),ro-1.5);geo=buildTube(ro,ri,n('h',40),ni('segments',64));break;}
-        case'sphere':   geo=buildSphere(n('r',25),ni('slices',48),ni('stacks',32)); break;
-        case'cone':     geo=buildCone(n('r',20),n('h',40),ni('segments',64)); break;
-        case'torus':    geo=buildTorus(n('R',30),n('r',8),ni('segments',48),ni('tube',24)); break;
-        case'star':     geo=buildStar(n('outerR',30),n('innerR',13),n('h',8),ni('pts',5,3,12)); break;
-        case'gear':     geo=buildGear(n('r',25),n('h',8),ni('teeth',12,6,32),n('r',25)*0.14); break;
-        case'hex':      geo=buildHexPrism(n('r',12),n('h',8)); break;
-        case'vase':     geo=buildVase(n('rBase',35),n('rTop',24,2),n('h',110),n('wall',3,1.5,20),ni('waves',0,0,16),n('waveAmp',3,0,15),n('twist',0,0,360),ni('segments',72),ni('stacks',60)); break;
-        case'flowerpot':geo=buildVase(n('r',40),n('r',40)*1.12,n('h',80),n('wall',3.5,1.5,20),0,0,0); break;
-        case'cup':      geo=buildVase(n('r',35),n('r',35)*1.04,n('h',80),n('wall',3,1.5,15),0,0,0); break;
-        case'openbox':  geo=buildOpenBox(n('w',80),n('d',60),n('h',40),n('wall',2.5,1,15)); break;
-        case'phonestand':geo=buildPhoneStand(n('w',80),n('d',55,20),n('baseH',6,2),n('backH',110,20),n('lipH',12,3),n('wall',5,2,15)); break;
-        case'keychain': geo=buildKeychain(n('w',42),n('d',18),n('h',4,1,15)); break;
-        case'hook':     geo=buildHook(n('w',40),n('armL',40,10),n('wallH',55,15),n('t',6,2,20)); break;
-        case'cableclip':geo=buildCableClip(n('cableD',8),n('wall',3,1.5,10)); break;
-        case'bookmark': geo=buildBookmark(n('w',22),n('h',80),n('t',2,1,8)); break;
-        case'nametag':  geo=buildNameTag(n('w',80),n('d',50),n('h',3,1,15)); break;
-        case'penholder':geo=buildPenHolder(n('r',35),n('h',100),n('wall',4,1.5,20)); break;
-        case'lshape':   {const w=n('w',50),d=n('d',40),h=n('h',5);const tw=Math.max(5,w*0.28),td=Math.max(5,d*0.28);geo=buildBox(tw,d,h)+buildBox(w-tw,td,h,tw,0,0);break;}
-        default:        {geo=buildBox(n('w',40),n('d',40),n('h',40));desc=`Quader (${n('w',40)}×${n('d',40)}×${n('h',40)}mm) – Fallback`;}
+      const builder = SHAPE_BUILDERS[parsed.shape];
+      if (builder) {
+        const result = builder(n, ni);
+        geo = result.geo;
+      } else {
+        geo = buildBox(n('w',40),n('d',40),n('h',40));
+        desc = `Quader (${n('w',40)}×${n('d',40)}×${n('h',40)}mm) – Fallback`;
       }
       return{stlText:`solid model\n${geo}endsolid model`,desc};
     }
@@ -1356,131 +1467,54 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
       if(h('quader','block','platte','sockel','podest','unterlage','untersetzer'))return'box';
       return'unknown';}
 
+    // Shape-specific size/param extractors for prompt-based generation
+    const SHAPE_PROMPT_CONFIGS = {
+      torus:      p => { const[R,,r]=parseSize(p,[30,30,8]);const rr=Math.min(r,R*0.38); return { params:{R,r:rr}, desc:`Torus/Ring (Außen⌀${((R+rr)*2).toFixed(0)}mm, Rohr⌀${rr*2}mm)` }; },
+      star:       p => { const[r,,h]=parseSize(p,[30,30,8]);const pts=parseInt(p.match(/(\d+)\s*zack/i)?.[1]||'5'); return { params:{outerR:r,innerR:r*0.42,h,pts}, desc:`${pts}-zackiger Stern (⌀${r*2}mm, H:${h}mm)` }; },
+      gear:       p => { const[r,,h]=parseSize(p,[25,25,8]);const teeth=parseInt(p.match(/(\d+)\s*zähn/i)?.[1]||'12'); return { params:{r,h,teeth}, desc:`Zahnrad (⌀${r*2}mm, H:${h}mm, ${teeth} Zähne)` }; },
+      hex:        p => { const[r,,h]=parseSize(p,[12,12,8]); return { params:{r,h}, desc:`Sechskant SW${(r*1.732).toFixed(1)}mm, H:${h}mm` }; },
+      tube:       p => { const[rO,,h]=parseSize(p,[20,20,40]);const rI=Math.max(2,rO*0.72); return { params:{rOuter:rO,rInner:rI,h}, desc:`Rohr/Hülse (⌀${rO*2}mm, H:${h}mm, Wand:${(rO-rI).toFixed(1)}mm)` }; },
+      sphere:     p => { const[r]=parseSize(p,[25,25,25]); return { params:{r}, desc:`Kugel (⌀${r*2}mm)` }; },
+      cone:       p => { const[r,,h]=parseSize(p,[20,20,40]); return { params:{r,h}, desc:`Kegel (Basis⌀${r*2}mm, H:${h}mm)` }; },
+      vase:       p => { const[r,,h]=parseSize(p,[35,35,110]);const pp=p.toLowerCase();const waves=pp.includes('muster')||pp.includes('welle')||pp.includes('rille')||pp.includes('gerippt')||pp.includes('kannelur')?9:0;const twist=pp.includes('twist')||pp.includes('gedreht')||pp.includes('spirale')?50:0;const rTop=r*0.68; return { params:{rBase:r,rTop,h,wall:3,waves,waveAmp:waves?2.5:0,twist}, desc:`${waves?'Gemusterte ':twist?'Gedrehte ':''}Vase (⌀${r*2}→⌀${(rTop*2).toFixed(0)}mm, H:${h}mm, offen${twist?', spiralförmig':''}${waves?', Rillen':''})` }; },
+      flowerpot:  p => { const[r,,h]=parseSize(p,[40,40,80]);const rTop=r*1.12; return { params:{r,h,wall:3.5}, desc:`Blumentopf (⌀${r*2}→⌀${(rTop*2).toFixed(0)}mm, H:${h}mm, offen)` }; },
+      cup:        p => { const[r,,h]=parseSize(p,[35,35,80]); return { params:{r,h,wall:3}, desc:`Becher (⌀${r*2}mm, H:${h}mm, oben offen)` }; },
+      cylinder:   p => { const[r,,h]=parseSize(p,[20,20,40]); return { params:{r,h}, desc:`Zylinder (⌀${r*2}mm, H:${h}mm)` }; },
+      phonestand: p => { const[w]=parseSize(p,[80,80,80]);const d=Math.max(50,w*0.62),baseH=6,backH=Math.min(130,w*1.65),lipH=12,wall=5; return { params:{w,d,baseH,backH,lipH,wall}, desc:`Handyständer (${w}mm breit, ${backH}mm Rückwand)` }; },
+      keychain:   p => { const[w]=parseSize(p,[42,42,4]);const d=Math.max(18,w*0.38),h=4; return { params:{w,d,h}, desc:`Schlüsselanhänger (${w}×${d}mm, mit Ring)` }; },
+      hook:       p => { const[w]=parseSize(p,[40,40,40]);const armL=Math.max(35,w),wallH=Math.max(55,w*1.3),t=6; return { params:{w,armL,wallH,t}, desc:`Wandhaken (${w}mm breit, Arm:${armL}mm)` }; },
+      cableclip:  p => { const[d]=parseSize(p,[8,8,8]); return { params:{cableD:d,wall:3}, desc:`Kabelclip (für ⌀${d}mm Kabel)` }; },
+      bookmark:   p => { const[w,,h]=parseSize(p,[22,3,80]); return { params:{w,h}, desc:`Lesezeichen (${w}×${h}mm)` }; },
+      nametag:    p => { const[w,d,h]=parseSize(p,[80,50,3]); return { params:{w,d,h}, desc:`Namensschild (${w}×${d}mm)` }; },
+      penholder:  p => { const[r,,h]=parseSize(p,[35,35,100]); return { params:{r,h,wall:4}, desc:`Stiftehalter (⌀${r*2}mm, H:${h}mm)` }; },
+      clip:       p => { const[w,,h]=parseSize(p,[30,10,15]); return { params:{w,h}, desc:`C-Clip (${w}mm breit, ${h}mm hoch)`, customGeo: () => { const t=3,depth=22; return buildBox(w,t,h)+buildBox(t,depth,h)+buildBox(t,depth,h,w-t,0,0); } }; },
+      lshape:     p => { const[w,d,h]=parseSize(p,[50,40,5]); return { params:{w,d,h}, desc:`L-Winkel (${w}×${d}mm, ${h}mm stark)` }; },
+      openbox:    p => { const[w,d,h]=parseSize(p,[80,60,40]); return { params:{w,d,h,wall:2.5}, desc:`Offene Box (${w}×${d}×${h}mm)` }; },
+      box:        p => { const[w,d,h]=parseSize(p,[30,30,30]); return { params:{w,d,h}, desc:`Quader (${w}×${d}×${h}mm)` }; },
+    };
+
     async function buildStlAsync(prompt,onProgress){
       const shape=detectShape(prompt);
       let geo='',desc='',fallback=false;
       onProgress(5,'Form erkannt …');await yield_();
 
-      if(shape==='torus'){
-        const[R,,r]=parseSize(prompt,[30,30,8]);const rr=Math.min(r,R*0.38);
-        onProgress(30,'Generiere Torus …');await yield_();
-        geo=buildTorus(R,rr);desc=`Torus/Ring (Außen⌀${((R+rr)*2).toFixed(0)}mm, Rohr⌀${rr*2}mm)`;
-
-      }else if(shape==='star'){
-        const[r,,h]=parseSize(prompt,[30,30,8]);const pts=parseInt(prompt.match(/(\d+)\s*zack/i)?.[1]||'5');
-        onProgress(30,'Generiere Stern …');await yield_();
-        geo=buildStar(r,r*0.42,h,pts);desc=`${pts}-zackiger Stern (⌀${r*2}mm, H:${h}mm)`;
-
-      }else if(shape==='gear'){
-        const[r,,h]=parseSize(prompt,[25,25,8]);const teeth=parseInt(prompt.match(/(\d+)\s*zähn/i)?.[1]||'12');
-        onProgress(30,'Generiere Zahnrad …');await yield_();
-        geo=buildGear(r,h,teeth,r*0.14);desc=`Zahnrad (⌀${r*2}mm, H:${h}mm, ${teeth} Zähne)`;
-
-      }else if(shape==='hex'){
-        const[r,,h]=parseSize(prompt,[12,12,8]);
-        onProgress(30,'Generiere Sechskant …');await yield_();
-        geo=buildHexPrism(r,h);desc=`Sechskant SW${(r*1.732).toFixed(1)}mm, H:${h}mm`;
-
-      }else if(shape==='tube'){
-        const[rO,,h]=parseSize(prompt,[20,20,40]);const rI=Math.max(2,rO*0.72);
-        onProgress(30,'Generiere Rohr …');await yield_();
-        geo=buildTube(rO,rI,h);desc=`Rohr/Hülse (⌀${rO*2}mm, H:${h}mm, Wand:${(rO-rI).toFixed(1)}mm)`;
-
-      }else if(shape==='sphere'){
-        const[r]=parseSize(prompt,[25,25,25]);
-        onProgress(30,'Generiere Kugel …');await yield_();
-        geo=buildSphere(r);desc=`Kugel (⌀${r*2}mm)`;
-
-      }else if(shape==='cone'){
-        const[r,,h]=parseSize(prompt,[20,20,40]);
-        onProgress(30,'Generiere Kegel …');await yield_();
-        geo=buildCone(r,h);desc=`Kegel (Basis⌀${r*2}mm, H:${h}mm)`;
-
-      }else if(shape==='vase'){
-        const[r,,h]=parseSize(prompt,[35,35,110]);
-        const pp=prompt.toLowerCase();
-        const waves=pp.includes('muster')||pp.includes('welle')||pp.includes('rille')||pp.includes('gerippt')||pp.includes('kannelur')?9:0;
-        const twist=pp.includes('twist')||pp.includes('gedreht')||pp.includes('spirale')?50:0;
-        const rTop=r*0.68;
-        onProgress(20,'Berechne Vasenform …');await yield_();
-        onProgress(50,'Generiere Wandgeometrie …');await yield_();
-        geo=buildVase(r,rTop,h,3,waves,waves?2.5:0,twist);
-        desc=`${waves?'Gemusterte ':twist?'Gedrehte ':''}Vase (⌀${r*2}→⌀${(rTop*2).toFixed(0)}mm, H:${h}mm, offen${twist?', spiralförmig':''}${waves?', Rillen':''})`;
-
-      }else if(shape==='flowerpot'){
-        const[r,,h]=parseSize(prompt,[40,40,80]);const rTop=r*1.12;
-        onProgress(30,'Generiere Blumentopf …');await yield_();
-        onProgress(55,'Berechne Topfform …');await yield_();
-        geo=buildVase(r,rTop,h,3.5,0,0,0);desc=`Blumentopf (⌀${r*2}→⌀${(rTop*2).toFixed(0)}mm, H:${h}mm, offen)`;
-
-      }else if(shape==='cup'){
-        const[r,,h]=parseSize(prompt,[35,35,80]);
-        onProgress(30,'Generiere Becher …');await yield_();
-        geo=buildVase(r,r*1.04,h,3,0,0,0);desc=`Becher (⌀${r*2}mm, H:${h}mm, oben offen)`;
-
-      }else if(shape==='cylinder'){
-        const[r,,h]=parseSize(prompt,[20,20,40]);
-        onProgress(30,'Generiere Zylinder …');await yield_();
-        geo=buildCylinder(r,h);desc=`Zylinder (⌀${r*2}mm, H:${h}mm)`;
-
-      }else if(shape==='phonestand'){
-        const[w]=parseSize(prompt,[80,80,80]);
-        const d=Math.max(50,w*0.62),baseH=6,backH=Math.min(130,w*1.65),lipH=12,wall=5;
-        onProgress(30,'Generiere Handyständer …');await yield_();
-        geo=buildPhoneStand(w,d,baseH,backH,lipH,wall);desc=`Handyständer (${w}mm breit, ${backH}mm Rückwand)`;
-
-      }else if(shape==='keychain'){
-        const[w]=parseSize(prompt,[42,42,4]);const d=Math.max(18,w*0.38),h=4;
-        onProgress(30,'Generiere Schlüsselanhänger …');await yield_();
-        geo=buildKeychain(w,d,h);desc=`Schlüsselanhänger (${w}×${d}mm, mit Ring)`;
-
-      }else if(shape==='hook'){
-        const[w]=parseSize(prompt,[40,40,40]);const armL=Math.max(35,w),wallH=Math.max(55,w*1.3),t=6;
-        onProgress(30,'Generiere Haken …');await yield_();
-        geo=buildHook(w,armL,wallH,t);desc=`Wandhaken (${w}mm breit, Arm:${armL}mm)`;
-
-      }else if(shape==='cableclip'){
-        const[d]=parseSize(prompt,[8,8,8]);
-        onProgress(30,'Generiere Kabelclip …');await yield_();
-        geo=buildCableClip(d,3);desc=`Kabelclip (für ⌀${d}mm Kabel)`;
-
-      }else if(shape==='bookmark'){
-        const[w,,h]=parseSize(prompt,[22,3,80]);
-        onProgress(30,'Generiere Lesezeichen …');await yield_();
-        geo=buildBookmark(w,h);desc=`Lesezeichen (${w}×${h}mm)`;
-
-      }else if(shape==='nametag'){
-        const[w,d,h]=parseSize(prompt,[80,50,3]);
-        onProgress(30,'Generiere Namensschild …');await yield_();
-        geo=buildNameTag(w,d,h);desc=`Namensschild (${w}×${d}mm)`;
-
-      }else if(shape==='penholder'){
-        const[r,,h]=parseSize(prompt,[35,35,100]);
-        onProgress(30,'Generiere Stiftehalter …');await yield_();
-        geo=buildPenHolder(r,h,4);desc=`Stiftehalter (⌀${r*2}mm, H:${h}mm)`;
-
-      }else if(shape==='clip'){
-        const[w,,h]=parseSize(prompt,[30,10,15]);const t=3,depth=22;
-        onProgress(30,'Generiere Clip …');await yield_();
-        geo=buildBox(w,t,h)+buildBox(t,depth,h)+buildBox(t,depth,h,w-t,0,0);
-        desc=`C-Clip (${w}mm breit, ${h}mm hoch)`;
-
-      }else if(shape==='lshape'){
-        const[w,d,h]=parseSize(prompt,[50,40,5]);const tw=Math.max(6,w*0.28),td=Math.max(6,d*0.28);
-        onProgress(30,'Generiere L-Winkel …');await yield_();
-        geo=buildBox(tw,d,h)+buildBox(w-tw,td,h,tw,0,0);desc=`L-Winkel (${w}×${d}mm, ${h}mm stark)`;
-
-      }else if(shape==='openbox'){
-        const[w,d,h]=parseSize(prompt,[80,60,40]);
-        onProgress(30,'Generiere Box …');await yield_();
-        geo=buildOpenBox(w,d,h,2.5);desc=`Offene Box (${w}×${d}×${h}mm)`;
-
-      }else if(shape==='box'){
-        const[w,d,h]=parseSize(prompt,[30,30,30]);
-        onProgress(30,'Generiere Quader …');await yield_();
-        geo=buildBox(w,d,h);desc=`Quader (${w}×${d}×${h}mm)`;
-
-      }else{
+      const promptConfig = SHAPE_PROMPT_CONFIGS[shape];
+      if (promptConfig) {
+        const cfg = promptConfig(prompt);
+        desc = cfg.desc;
+        const shapeLabel = SHAPE_BUILDERS[shape]?.label || shape;
+        onProgress(30,`Generiere ${shapeLabel} …`);await yield_();
+        if (cfg.customGeo) {
+          geo = cfg.customGeo();
+        } else {
+          const p = cfg.params;
+          const n = (k,def,mn=1,mx=300) => Math.min(mx,Math.max(mn,parseFloat(p[k])||def));
+          const ni = (k,def,mn=3,mx=128) => Math.round(n(k,def,mn,mx));
+          const builder = SHAPE_BUILDERS[shape];
+          if (builder) geo = builder(n,ni).geo;
+          else geo = buildBox(p.w||40, p.d||40, p.h||40);
+        }
+      } else {
         const[w,d,h]=parseSize(prompt,[30,30,30]);
         onProgress(30,'Unbekannte Form – Quader als Fallback …');await yield_();
         geo=buildBox(w,d,h);desc=`Quader (${w}×${d}×${h}mm)`;fallback=true;
@@ -1507,13 +1541,19 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
       {id:'free30', cost:350, label:'🏅 Freidruck bis 30g'},
       {id:'free50', cost:600, label:'🚀 Freidruck bis 50g'},
     ];
-    let selectedDiscount = null;
-    let selectedStlDiscount = null;
+    // Discount managers using shared factory (replaces duplicated selectDiscount/selectStlDiscount)
+    const ideaDiscountMgr = createDiscountManager('discount-label', 'discount-selected');
+    const stlDiscountMgr  = createDiscountManager('stl-discount-label', 'stl-discount-selected');
+
+    // Backward-compatible wrappers for onclick handlers in HTML
+    function selectDiscount(pct, cost) { ideaDiscountMgr.select(pct, cost); }
+    function clearDiscount() { ideaDiscountMgr.clear(); }
+    function selectStlDiscount(pct, cost) { stlDiscountMgr.select(pct, cost); }
+    function clearStlDiscount() { stlDiscountMgr.clear(); }
 
     function updateShopUI() {
       const p = getPoints();
       ['shop-points-display','stl-shop-points-display'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=p;});
-      // Map button IDs to required point costs
       const map=[['disc-10',50],['disc-25',100],['disc-free20',200],['disc-free30',350],['disc-free50',600],
                  ['stl-disc-10',50],['stl-disc-25',100],['stl-disc-free20',200],['stl-disc-free30',350],['stl-disc-free50',600]];
       map.forEach(([id,cost])=>{
@@ -1522,26 +1562,6 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
         else{btn.style.opacity='0.4';btn.style.cursor='not-allowed';}
       });
     }
-
-    function selectDiscount(pct, cost) {
-      if(getPoints()<cost){showToast(`Nicht genug Punkte (${cost} benötigt)`);return;}
-      const item=SHOP_ITEMS.find(x=>x.id===pct&&x.cost===cost)||{label:pct};
-      selectedDiscount={pct,cost,label:item.label};
-      document.getElementById('discount-label').textContent = item.label+' aktiviert – '+cost+' Punkte werden abgezogen';
-      document.getElementById('discount-selected').style.display='flex';
-      showToast(`${item.label} ausgewählt!`);
-    }
-    function clearDiscount(){selectedDiscount=null;document.getElementById('discount-selected').style.display='none';}
-
-    function selectStlDiscount(pct, cost) {
-      if(getPoints()<cost){showToast(`Nicht genug Punkte (${cost} benötigt)`);return;}
-      const item=SHOP_ITEMS.find(x=>x.id===pct&&x.cost===cost)||{label:pct};
-      selectedStlDiscount={pct,cost,label:item.label};
-      document.getElementById('stl-discount-label').textContent = item.label+' aktiviert – '+cost+' Punkte werden abgezogen';
-      document.getElementById('stl-discount-selected').style.display='flex';
-      showToast(`${item.label} ausgewählt!`);
-    }
-    function clearStlDiscount(){selectedStlDiscount=null;document.getElementById('stl-discount-selected').style.display='none';}
 
     function applyDiscount(discount, priceStr) {
       if(!discount) return '';
