@@ -52,6 +52,22 @@
     .model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
     .points-badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;border-radius:20px;padding:3px 10px;font-size:.72rem;font-weight:700;font-family:'DM Mono',monospace}
     @media(min-width:1024px){#layout{display:grid;grid-template-columns:2fr 3fr;align-items:start}}
+    /* Auth Overlay */
+    #auth-overlay{position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;}
+    #auth-box{width:100%;max-width:400px;padding:0 20px;}
+    #auth-box .card{padding:32px;}
+    #auth-box h2{font-size:1.15rem;font-weight:700;margin-bottom:4px;text-align:center;}
+    #auth-box .auth-sub{font-size:.82rem;color:var(--muted);text-align:center;margin-bottom:22px;}
+    #auth-box .auth-fields{display:flex;flex-direction:column;gap:12px;}
+    #auth-box .auth-toggle{text-align:center;margin-top:16px;font-size:.82rem;color:var(--muted);}
+    #auth-box .auth-toggle a{color:var(--accent);font-weight:600;cursor:pointer;text-decoration:none;}
+    #auth-box .auth-toggle a:hover{text-decoration:underline;}
+    #auth-error{display:none;background:var(--warn-lt);border:1px solid #f4c4a8;border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--warn);margin-bottom:12px;}
+    .user-bar{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:.8rem;}
+    .user-bar .user-name{font-weight:600;font-size:.82rem;}
+    .user-bar .user-klasse{font-size:.72rem;color:var(--muted);font-family:'DM Mono',monospace;}
+    .logout-btn{background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:.72rem;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:border-color .15s,color .15s;}
+    .logout-btn:hover{border-color:var(--warn);color:var(--warn);}
     .dz-over{border-color:var(--accent)!important;background:var(--accent-lt)!important}
     .order-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;transition:box-shadow .15s;border-left:3px solid var(--border)}
     .order-card.type-print{border-left-color:var(--accent)}
@@ -63,6 +79,32 @@
   </style>
 </head>
 <body>
+  <!-- AUTH OVERLAY -->
+  <div id="auth-overlay">
+    <div class="header-bar" style="position:fixed;top:0;left:0;right:0;"></div>
+    <div id="auth-box">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="width:48px;height:48px;background:var(--text);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+        </div>
+      </div>
+      <div class="card">
+        <h2 id="auth-title">Anmelden</h2>
+        <div class="auth-sub" id="auth-sub">Melde dich an, um das Kreativlabor zu nutzen.</div>
+        <div id="auth-error"></div>
+        <div class="auth-fields">
+          <div id="auth-name-field" style="display:none;"><label class="field-label">Name</label><input id="auth-name" type="text" placeholder="Vorname Nachname" class="lab-input"/></div>
+          <div id="auth-klasse-field" style="display:none;"><label class="field-label">Klasse</label><input id="auth-klasse" type="text" placeholder="z. B. 10b" class="lab-input"/></div>
+          <div><label class="field-label">E-Mail</label><input id="auth-email" type="email" placeholder="name@schule.de" class="lab-input"/></div>
+          <div><label class="field-label">Passwort</label><input id="auth-pw" type="password" placeholder="Passwort" class="lab-input" onkeydown="if(event.key==='Enter')authSubmit()"/></div>
+          <button class="btn-primary" onclick="authSubmit()" id="auth-btn">Anmelden</button>
+        </div>
+        <div class="auth-toggle" id="auth-toggle">Noch kein Konto? <a onclick="toggleAuthMode()">Registrieren</a></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-content" style="display:none;">
   <div class="header-bar"></div>
 
   <header style="background:var(--surface);border-bottom:1px solid var(--border);">
@@ -78,6 +120,11 @@
       </div>
       <div style="display:flex;align-items:center;gap:10px;" class="s2">
         <div id="points-display" style="display:none;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#fff;border-radius:20px;padding:6px 14px;font-size:.8rem;font-weight:700;font-family:'DM Mono',monospace;">⭐ <span id="user-points">0</span> Punkte</div>
+        <div class="user-bar" id="user-bar">
+          <span class="user-name" id="header-user-name"></span>
+          <span class="user-klasse" id="header-user-klasse"></span>
+          <button class="logout-btn" onclick="authLogout()">Abmelden</button>
+        </div>
         <button onclick="switchMainTab('db')" class="btn-ghost" style="font-size:.8rem;">🗄️ Modell-Datenbank</button>
         <button onclick="openAdminLogin()" id="admin-login-btn" style="background:transparent;border:none;cursor:pointer;font-family:'DM Mono',monospace;font-size:.67rem;color:#ccc9c2;padding:0;transition:color .15s;" onmouseover="this.style.color='var(--muted)'" onmouseout="this.style.color='#ccc9c2'">Admin</button>
       </div>
@@ -119,10 +166,8 @@
         <div class="card" style="padding:28px;">
           <h2 style="font-size:1rem;font-weight:600;margin-bottom:20px;">Neuen Auftrag einreichen</h2>
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <div><label class="field-label">Name</label><input id="f-name" type="text" placeholder="Vorname Nachname" class="lab-input"/></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div><label class="field-label">Klasse</label><input id="f-class" type="text" placeholder="z. B. 10b" class="lab-input"/></div>
-              <div><label class="field-label">E-Mail</label><input id="f-email" type="email" placeholder="name@schule.de" class="lab-input"/></div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:8px;">
+              <span>👤</span><span id="idea-user-info" style="font-weight:500;"></span>
             </div>
             <div><label class="field-label" id="desc-label">Projektbeschreibung</label>
               <textarea id="f-desc" rows="5" class="lab-input" style="resize:vertical;min-height:110px;" placeholder="Material, Abmessungen, Farbe, Stückzahl …"></textarea></div>
@@ -195,10 +240,8 @@
           <h2 style="font-size:1rem;font-weight:600;margin-bottom:6px;">STL-Datei zum Druck einreichen</h2>
           <p style="font-size:.82rem;color:var(--muted);margin-bottom:20px;">Fertige STL hochladen und drucken lassen.</p>
           <div style="display:flex;flex-direction:column;gap:14px;">
-            <div><label class="field-label">Name</label><input id="stl-name" type="text" placeholder="Vorname Nachname" class="lab-input"/></div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-              <div><label class="field-label">Klasse</label><input id="stl-class" type="text" placeholder="z. B. 10b" class="lab-input"/></div>
-              <div><label class="field-label">E-Mail</label><input id="stl-email" type="email" placeholder="name@schule.de" class="lab-input"/></div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:8px;">
+              <span>👤</span><span id="stl-user-info" style="font-weight:500;"></span>
             </div>
 
             <!-- STL Generator v2: KI-gestützt mit Feedback-Schleife -->
@@ -551,9 +594,99 @@
     // ── Storage Keys ─────────────────────────────────────
     const KEY = 'kreativlabor_v2';
     const DB_KEY = 'kreativlabor_modeldb';
-    const POINTS_KEY = 'kreativlabor_points';
+    const USERS_KEY = 'kreativlabor_users';
+    const SESSION_KEY = 'kreativlabor_session';
     const ADMIN_PW = 'kreativlabor2025';
     let isAdmin = false;
+    let currentUser = null; // {email,name,klasse,points}
+
+    // ── Auth System ─────────────────────────────────────
+    let authMode = 'login'; // 'login' or 'register'
+
+    function getUsers(){try{return JSON.parse(localStorage.getItem(USERS_KEY))||{};}catch{return {};}}
+    function saveUsers(u){localStorage.setItem(USERS_KEY,JSON.stringify(u));}
+
+    function toggleAuthMode(){
+      authMode = authMode==='login'?'register':'login';
+      const isReg = authMode==='register';
+      document.getElementById('auth-title').textContent = isReg?'Registrieren':'Anmelden';
+      document.getElementById('auth-sub').textContent = isReg?'Erstelle ein Konto für das Kreativlabor.':'Melde dich an, um das Kreativlabor zu nutzen.';
+      document.getElementById('auth-btn').textContent = isReg?'Registrieren':'Anmelden';
+      document.getElementById('auth-name-field').style.display = isReg?'block':'none';
+      document.getElementById('auth-klasse-field').style.display = isReg?'block':'none';
+      document.getElementById('auth-toggle').innerHTML = isReg
+        ? 'Bereits ein Konto? <a onclick="toggleAuthMode()">Anmelden</a>'
+        : 'Noch kein Konto? <a onclick="toggleAuthMode()">Registrieren</a>';
+      document.getElementById('auth-error').style.display='none';
+    }
+
+    function showAuthError(msg){
+      const el=document.getElementById('auth-error');
+      el.textContent=msg;el.style.display='block';
+    }
+
+    function authSubmit(){
+      const email=document.getElementById('auth-email').value.trim().toLowerCase();
+      const pw=document.getElementById('auth-pw').value;
+      if(!email||!email.includes('@')){showAuthError('Bitte eine gültige E-Mail eingeben.');return;}
+      if(!pw||pw.length<4){showAuthError('Passwort muss mindestens 4 Zeichen haben.');return;}
+
+      const users=getUsers();
+
+      if(authMode==='register'){
+        const name=document.getElementById('auth-name').value.trim();
+        const klasse=document.getElementById('auth-klasse').value.trim();
+        if(!name){showAuthError('Bitte deinen Namen eingeben.');return;}
+        if(!klasse){showAuthError('Bitte deine Klasse eingeben.');return;}
+        if(users[email]){showAuthError('Diese E-Mail ist bereits registriert. Bitte anmelden.');return;}
+        users[email]={name,klasse,pw,points:0};
+        saveUsers(users);
+        loginAs(email,users[email]);
+      } else {
+        const user=users[email];
+        if(!user){showAuthError('Kein Konto mit dieser E-Mail gefunden.');return;}
+        if(user.pw!==pw){showAuthError('Falsches Passwort.');return;}
+        loginAs(email,user);
+      }
+    }
+
+    function loginAs(email,user){
+      currentUser={email,name:user.name,klasse:user.klasse,points:user.points||0};
+      localStorage.setItem(SESSION_KEY,email);
+      document.getElementById('auth-overlay').style.display='none';
+      document.getElementById('app-content').style.display='block';
+      updateUserUI();
+      updatePointsDisplay();
+      updateShopUI();
+      renderOrders();
+    }
+
+    function authLogout(){
+      currentUser=null;
+      localStorage.removeItem(SESSION_KEY);
+      document.getElementById('auth-overlay').style.display='flex';
+      document.getElementById('app-content').style.display='none';
+      document.getElementById('auth-email').value='';
+      document.getElementById('auth-pw').value='';
+      document.getElementById('auth-error').style.display='none';
+    }
+
+    function updateUserUI(){
+      if(!currentUser)return;
+      document.getElementById('header-user-name').textContent=currentUser.name;
+      document.getElementById('header-user-klasse').textContent='Klasse '+currentUser.klasse;
+      document.getElementById('idea-user-info').textContent=currentUser.name+' · Klasse '+currentUser.klasse+' · '+currentUser.email;
+      document.getElementById('stl-user-info').textContent=currentUser.name+' · Klasse '+currentUser.klasse+' · '+currentUser.email;
+    }
+
+    function tryAutoLogin(){
+      const email=localStorage.getItem(SESSION_KEY);
+      if(!email)return;
+      const users=getUsers();
+      const user=users[email];
+      if(!user)return;
+      loginAs(email,user);
+    }
 
     // ── EmailJS / Send ────────────────────────────────────
     // EmailJS fallback für GitHub Pages
@@ -597,10 +730,35 @@
     function getOrders(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch{return[];}}
     function saveOrders(o){localStorage.setItem(KEY,JSON.stringify(o));}
 
-    // ── Points ───────────────────────────────────────────
-    function getPoints(){return parseInt(localStorage.getItem(POINTS_KEY)||'0');}
-    function addPoints(n){const p=getPoints()+n;localStorage.setItem(POINTS_KEY,p);updatePointsDisplay();showToast(`+${n} Punkte! Jetzt ${p} Punkte ⭐`);}
-    function updatePointsDisplay(){const p=getPoints();document.getElementById('user-points').textContent=p;document.getElementById('db-points-num').textContent=p;if(p>0){document.getElementById('points-display').style.display='flex';}}
+    // ── Points (per-user) ────────────────────────────────
+    function getPoints(){
+      if(!currentUser)return 0;
+      return currentUser.points||0;
+    }
+    function addPoints(n){
+      if(!currentUser)return;
+      currentUser.points=(currentUser.points||0)+n;
+      const users=getUsers();
+      if(users[currentUser.email])users[currentUser.email].points=currentUser.points;
+      saveUsers(users);
+      updatePointsDisplay();
+      showToast(`+${n} Punkte! Jetzt ${currentUser.points} Punkte ⭐`);
+    }
+    function setPoints(p){
+      if(!currentUser)return;
+      currentUser.points=Math.max(0,p);
+      const users=getUsers();
+      if(users[currentUser.email])users[currentUser.email].points=currentUser.points;
+      saveUsers(users);
+    }
+    function updatePointsDisplay(){
+      const p=getPoints();
+      document.getElementById('user-points').textContent=p;
+      const dbEl=document.getElementById('db-points-num');
+      if(dbEl)dbEl.textContent=p;
+      if(p>0){document.getElementById('points-display').style.display='flex';}
+      else{document.getElementById('points-display').style.display='none';}
+    }
 
     // ── Model DB ─────────────────────────────────────────
     function getModels(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch{return[];}}
@@ -776,15 +934,13 @@
       const errEl=document.getElementById('form-error');
       const btn=document.querySelector('#panel-idea .btn-primary');
       errEl.style.display='none';
-      const name=document.getElementById('f-name').value.trim();
-      const klass=document.getElementById('f-class').value.trim();
-      const email=document.getElementById('f-email').value.trim();
+      if(!currentUser){showAuthError('Bitte zuerst anmelden.');return;}
+      const name=currentUser.name;
+      const klass=currentUser.klasse;
+      const email=currentUser.email;
       const desc=document.getElementById('f-desc').value.trim();
       const type=document.getElementById('f-type')?.value||'print';
       const errs=[];
-      if(!name)errs.push('Name fehlt');
-      if(!klass)errs.push('Klasse fehlt');
-      if(!email||!email.includes('@'))errs.push('Gültige E-Mail eingeben');
       if(!desc||desc.length<10)errs.push('Beschreibung zu kurz (min. 10 Zeichen)');
       if(errs.length){errEl.innerHTML='• '+errs.join('<br>• ');errEl.style.display='block';return;}
       const nachricht=
@@ -799,9 +955,9 @@
         const orders=getOrders();
         orders.push({id:crypto.randomUUID(),ts:Date.now(),name,klasse:klass,email,type,desc});
         saveOrders(orders);
-        ['f-name','f-class','f-email','f-desc'].forEach(id=>document.getElementById(id).value='');
+        document.getElementById('f-desc').value='';
         clearImage({stopPropagation:()=>{}});
-        if(selectedDiscount){const p=getPoints()-selectedDiscount.cost;localStorage.setItem(POINTS_KEY,Math.max(0,p));updatePointsDisplay();updateShopUI();}
+        if(selectedDiscount){setPoints(getPoints()-selectedDiscount.cost);updatePointsDisplay();updateShopUI();}
         clearDiscount();
         renderOrders();
         showToast('✓ Auftrag erfolgreich gesendet!');
@@ -816,18 +972,16 @@
       const errEl=document.getElementById('stl-form-error');
       const btn=document.querySelector('#panel-stl .btn-primary');
       errEl.style.display='none';
-      const name=document.getElementById('stl-name').value.trim();
-      const klass=document.getElementById('stl-class').value.trim();
-      const email=document.getElementById('stl-email').value.trim();
+      if(!currentUser){showAuthError('Bitte zuerst anmelden.');return;}
+      const name=currentUser.name;
+      const klass=currentUser.klasse;
+      const email=currentUser.email;
       const mat=document.getElementById('stl-material').value;
       const color=document.getElementById('stl-color').value;
       const count=document.getElementById('stl-count').value||'1';
       const infill=document.getElementById('stl-infill').value||'20';
       const notes=document.getElementById('stl-notes').value.trim();
       const errs=[];
-      if(!name)errs.push('Name fehlt');
-      if(!klass)errs.push('Klasse fehlt');
-      if(!email||!email.includes('@'))errs.push('Gültige E-Mail eingeben');
       if(!stlFile)errs.push('Keine STL-Datei ausgewählt');
       if(!mat)errs.push('Material auswählen');
       if(!color)errs.push('Farbe auswählen');
@@ -866,7 +1020,7 @@
         const orders=getOrders();
         orders.push({id:crypto.randomUUID(),ts:Date.now(),name,klasse:klass,email,type:'stl',price:priceString(),desc:`STL: ${stlFile.name} | ${mat} | ${color} | ${count}× | ${infill}%`});
         saveOrders(orders);
-        ['stl-name','stl-class','stl-email','stl-color','stl-notes','model-title','model-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+        ['stl-color','stl-notes','model-title','model-desc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''});
         document.getElementById('stl-material').value='';
         document.getElementById('stl-infill').value='20';
         document.getElementById('stl-count').value='1';
@@ -878,7 +1032,7 @@
         document.getElementById('db-fields').style.display='none';
         clearDbPhoto({stopPropagation:()=>{}});
         clearStlFile({stopPropagation:()=>{}});
-        if(selectedStlDiscount){const p=getPoints()-selectedStlDiscount.cost;localStorage.setItem(POINTS_KEY,Math.max(0,p));updatePointsDisplay();updateShopUI();}
+        if(selectedStlDiscount){setPoints(getPoints()-selectedStlDiscount.cost);updatePointsDisplay();updateShopUI();}
         clearStlDiscount();
         renderOrders();
         const hint=document.getElementById('stl-success-hint');
@@ -1659,9 +1813,8 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
 
     // ── Init ──────────────────────────────────────────────
     document.getElementById('panel-stl').style.display='none';
-    updatePointsDisplay();
-    updateShopUI();
-    renderOrders();
+    tryAutoLogin();
   </script>
+  </div><!-- /app-content -->
 </body>
 </html>
