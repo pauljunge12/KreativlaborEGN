@@ -565,27 +565,39 @@
       const s=document.createElement('script');
       s.src='https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
       s.onload=()=>emailjs.init({publicKey:EMAILJS_PUBLIC_KEY});
+      s.onerror=()=>console.warn('EmailJS-Skript konnte nicht geladen werden – Fallback steht nicht zur Verfügung.');
       document.head.appendChild(s);
     })();
 
     async function sendEmail(subject, nachricht, replyTo, file) {
       // Try Vercel API first (works on kreativlabor-egn.vercel.app)
+      let vercelError=null;
       try {
         let fileName=null,fileData=null;
         if(file){
           fileName=file.name;
-          fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(file);});
+          fileData=await new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=()=>rej(new Error('Datei konnte nicht gelesen werden.'));r.readAsDataURL(file);});
         }
         const resp=await fetch('/api/send',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
           body:JSON.stringify({subject,nachricht,replyTo,fileName,fileData})
         });
-        if(resp.ok){const data=await resp.json();if(data.success)return;}
-      } catch(e){/* fallback to EmailJS */}
+        if(resp.ok){
+          const data=await resp.json();
+          if(data.success) return;
+          vercelError=data.error||'Unbekannter API-Fehler';
+        } else {
+          const body=await resp.json().catch(()=>({}));
+          vercelError=body.error||`Server-Fehler (${resp.status})`;
+        }
+      } catch(e){
+        vercelError=e.message||'Netzwerkfehler';
+      }
+      if(vercelError) console.warn('Vercel API fehlgeschlagen, versuche EmailJS-Fallback:',vercelError);
 
       // EmailJS fallback (works everywhere)
-      if(typeof emailjs==='undefined') throw new Error('E-Mail-Dienst nicht geladen. Bitte Seite neu laden.');
+      if(typeof emailjs==='undefined') throw new Error('E-Mail-Dienst nicht verfügbar. Bitte Seite neu laden.');
       let msg=nachricht;
       if(file) msg+=`\n\n📎 STL-Datei: ${file.name} (${(file.size/1024).toFixed(1)} KB)\n⚠ Bitte STL-Datei separat per Mail anfordern.`;
       await emailjs.send(EMAILJS_SERVICE_ID,EMAILJS_TEMPLATE_ID,{
@@ -594,7 +606,7 @@
     }
 
     // ── Orders ────────────────────────────────────────────
-    function getOrders(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch{return[];}}
+    function getOrders(){try{return JSON.parse(localStorage.getItem(KEY))||[];}catch(e){console.error('Aufträge konnten nicht geladen werden, setze zurück:',e);localStorage.removeItem(KEY);return[];}}
     function saveOrders(o){localStorage.setItem(KEY,JSON.stringify(o));}
 
     // ── Points ───────────────────────────────────────────
@@ -603,7 +615,7 @@
     function updatePointsDisplay(){const p=getPoints();document.getElementById('user-points').textContent=p;document.getElementById('db-points-num').textContent=p;if(p>0){document.getElementById('points-display').style.display='flex';}}
 
     // ── Model DB ─────────────────────────────────────────
-    function getModels(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch{return[];}}
+    function getModels(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[];}catch(e){console.error('Modell-Datenbank konnte nicht geladen werden, setze zurück:',e);localStorage.removeItem(DB_KEY);return[];}}
     function saveModels(m){localStorage.setItem(DB_KEY,JSON.stringify(m));}
 
     let currentModelId = null;
@@ -668,19 +680,27 @@
       const models = getModels();
       const idx = models.findIndex(x=>x.id===currentModelId);
       if(idx<0) return;
+      const m = models[idx];
+      if(!m.stlData){
+        showToast('Keine STL-Datei für dieses Modell verfügbar.');
+        closeModelModal();
+        return;
+      }
+      const blob = dataURItoBlob(m.stlData);
+      if(!blob){
+        showToast('STL-Datei konnte nicht verarbeitet werden.');
+        closeModelModal();
+        return;
+      }
       models[idx].downloads=(models[idx].downloads||0)+1;
       saveModels(models);
       renderDB();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href=url;a.download=m.stlName||m.title+'.stl';
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1500);
       showToast('STL wird heruntergeladen!');
-      const m = models[idx];
-      if(m.stlData){
-        const blob = dataURItoBlob(m.stlData);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href=url;a.download=m.stlName||m.title+'.stl';
-        document.body.appendChild(a);a.click();
-        setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1500);
-      }
       closeModelModal();
     }
 
@@ -701,12 +721,19 @@
     }
 
     function dataURItoBlob(dataURI){
-      const parts=dataURI.split(',');
-      const mime=parts[0].match(/:(.*?);/)[1];
-      const bin=atob(parts[1]);
-      const arr=new Uint8Array(bin.length);
-      for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
-      return new Blob([arr],{type:mime});
+      try{
+        const parts=dataURI.split(',');
+        const mimeMatch=parts[0].match(/:(.*?);/);
+        if(!mimeMatch) throw new Error('Ungültiges Datenformat');
+        const mime=mimeMatch[1];
+        const bin=atob(parts[1]);
+        const arr=new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+        return new Blob([arr],{type:mime});
+      }catch(e){
+        console.error('dataURItoBlob fehlgeschlagen:',e);
+        return null;
+      }
     }
 
     // ── Image helpers ─────────────────────────────────────
@@ -904,10 +931,15 @@
       document.getElementById('ai-btn').disabled=true;
       try{
         const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:`Du bist ein Designberater für ein Schüler-Kreativlabor. Der Schüler beschreibt eine Idee für ein 3D-Druckobjekt. Erstelle einen kurzen, strukturierten Vorschlag auf Deutsch mit: Objektname, Abmessungen (in mm), empfohlenes Material, besondere Merkmale, und 2-3 Drucktipps. Sei präzise und praxisnah.`,messages:[{role:'user',content:`Idee: ${prompt}`}]})});
+        if(!res.ok){
+          const errBody=await res.json().catch(()=>({}));
+          throw new Error(errBody.error?.message||`KI-Anfrage fehlgeschlagen (${res.status})`);
+        }
         const data=await res.json();
+        if(!data.content||!data.content.length) throw new Error('Leere KI-Antwort erhalten.');
         document.getElementById('ai-output').textContent=data.content.map(b=>b.text||'').join('').trim();
         document.getElementById('ai-result').style.display='block';
-      }catch{document.getElementById('ai-error').textContent='Fehler. Bitte erneut versuchen.';document.getElementById('ai-error').style.display='block';}
+      }catch(e){document.getElementById('ai-error').textContent=e.message||'Fehler. Bitte erneut versuchen.';document.getElementById('ai-error').style.display='block';}
       finally{document.getElementById('ai-spinner').style.display='none';document.getElementById('ai-btn-text').textContent='Skizzenvorschlag erstellen';document.getElementById('ai-btn').disabled=false;}
     }
     function copySketch(){navigator.clipboard.writeText(document.getElementById('ai-output').textContent);showToast('Kopiert!');}
@@ -1027,7 +1059,12 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
         const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
           headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
           body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:GEN_SYSTEM,messages:genConvHistory})});
+        if(!res.ok){
+          const errBody=await res.json().catch(()=>({}));
+          throw new Error(errBody.error?.message||`KI-Anfrage fehlgeschlagen (${res.status})`);
+        }
         const data=await res.json();
+        if(!data.content||!data.content.length) throw new Error('Leere KI-Antwort erhalten.');
         const raw=data.content.map(b=>b.text||'').join('').trim();
 
         let parsed;
@@ -1083,7 +1120,12 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
         const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
           headers:{'Content-Type':'application/json','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
           body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:500,system:refSys,messages:genConvHistory})});
+        if(!res.ok){
+          const errBody=await res.json().catch(()=>({}));
+          throw new Error(errBody.error?.message||`KI-Anfrage fehlgeschlagen (${res.status})`);
+        }
         const data=await res.json();
+        if(!data.content||!data.content.length) throw new Error('Leere KI-Antwort erhalten.');
         const raw=data.content.map(b=>b.text||'').join('').trim();
         let parsed;
         try{parsed=JSON.parse(raw.replace(/```json\n?/g,'').replace(/```\n?/g,'').trim());}
@@ -1604,7 +1646,7 @@ Alle Maße in mm. Druckbar: min 5mm, max 250mm.`;
         document.getElementById('pr-total').textContent=`${totalAll.toFixed(2).replace('.',',')} €`;
         document.getElementById('stl-price-rows').style.display='block';
         section.scrollIntoView({behavior:'smooth',block:'nearest'});
-      }catch{document.getElementById('stl-price-label').textContent='PREISSCHÄTZUNG NICHT MÖGLICH';document.getElementById('stl-price-spinner').style.display='none';}
+      }catch(e){console.error('Preisberechnung fehlgeschlagen:',e);document.getElementById('stl-price-label').textContent='PREISSCHÄTZUNG NICHT MÖGLICH';document.getElementById('stl-price-spinner').style.display='none';}
     }
 
     function priceString(){if(!calculatedPrice)return'– (nicht berechnet)';const p=calculatedPrice;return p.count>1?`${p.totalAll.toFixed(2).replace('.',',')} € gesamt (${p.count}× à ${p.totalOne.toFixed(2).replace('.',',')} €)`:`${p.totalAll.toFixed(2).replace('.',',')} €`;}
